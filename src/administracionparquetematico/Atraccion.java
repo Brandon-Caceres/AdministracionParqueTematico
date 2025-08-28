@@ -42,4 +42,23 @@ public class Atraccion{
     
     public List<Reserva> getReservas() {return reservas;}
     public void setReservas(List<Reserva> reservas) {this.reservas = reservas;}
+    
+    public void agregarReserva(Reserva reserva){
+        reservas.add(reserva);
+        if(reserva.getAtraccion() != this){
+            reserva.setAtraccion(this);
+        }
+    }
+    
+    public void eliminarReserva(int codigo){
+        for(Iterator<Reserva> it = reservas.iterator(); it.hasNext();){
+            Reserva reserva = it.next();
+            if(reserva.getCodigoR() == codigo){
+                it.remove();
+                System.out.println("Reserva con código " + codigo + " eliminada.");
+                return;
+            }
+        }
+        System.out.println("No se encontró reserva con código " + codigo);
+    }
 }

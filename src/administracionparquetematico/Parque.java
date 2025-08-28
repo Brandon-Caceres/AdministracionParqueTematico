@@ -20,7 +20,33 @@ public class Parque{
     }
     
     //Metodos
-    public Map<Integer, Atraccion> getAtracciones() {return atracciones;}
+    public Map<Integer, Atraccion> getAtracciones() {return Collections.unmodifiableMap(atracciones);}
     public void setAtracciones(Map<Integer, Atraccion> atracciones) {this.atracciones = atracciones;}
     
+    public void agregarAtraccion(Atraccion atraccion){
+        atracciones.put(atraccion.getCodigo(), atraccion);
+    }
+    
+    public void eliminarAtraccion(int codigo) {
+        Iterator<Map.Entry<Integer, Atraccion>> it = atracciones.entrySet().iterator();
+
+        while(it.hasNext()) {
+            Map.Entry<Integer, Atraccion> atraccion = it.next();
+            if(atraccion.getKey() == codigo) {
+                it.remove();
+                System.out.println("Atracción con código " + codigo + " eliminada.");
+                return;
+            }
+        }
+        System.out.println("No se encontró atracción con código " + codigo);
+    }
+    
+    public Atraccion buscarAtraccion(int codigo) {
+        for (Atraccion a : atracciones.values()) {
+            if (a.getCodigo() == codigo) {
+                return a;
+            }
+        }
+        return null;
+    }
 }

@@ -40,4 +40,20 @@ public class Reserva{
     public void agregarPersonas(List<Persona> personas) {
         grupo.addAll(personas);
     }
+    
+    public void agregarPersona(String nombre, int edad, int altura, int peso) { 
+        grupo.add(new Persona(nombre, edad, altura, peso)); 
+    }
+    
+    public void eliminarPersona(String name){
+        for(Iterator<Persona> it = grupo.iterator(); it.hasNext();){
+            Persona persona = it.next();
+            if(persona.getNombre().equals(name)){
+                it.remove();
+                System.out.println("La persona " + name + " ha sido eliminada de la reserva");
+                return;
+            }
+        }
+        System.out.println("No se encontró persona con nombre " + name);
+    }
 }
