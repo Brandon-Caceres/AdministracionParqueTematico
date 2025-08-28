@@ -11,17 +11,16 @@ package administracionparquetematico;
 import java.util.*;
 
 public class Parque{
-    private List<Atracciones> atracciones;
-    private List<Reserva> reservas;
+    //Atributo
+    private Map<Integer, Atraccion> atracciones;
     
+    //Constructor
     public Parque() {
-        atracciones = new ArrayList<>();
-        reservas = new ArrayList<>();
+        atracciones = new HashMap<>();
     }
-
-    public void agregarAtraccion(Atracciones a) {atracciones.add(a);}
-    public void agregarReserva(Reserva r) {reservas.add(r);}
-
-    public List<Atracciones> getAtracciones() {return atracciones;}
-    public List<Reserva> getReservas() {return reservas;}
+    
+    //Metodos
+    public Map<Integer, Atraccion> getAtracciones() {return atracciones;}
+    public void setAtracciones(Map<Integer, Atraccion> atracciones) {this.atracciones = atracciones;}
+    
 }

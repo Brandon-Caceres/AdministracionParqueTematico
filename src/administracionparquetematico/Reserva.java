@@ -11,24 +11,27 @@ package administracionparquetematico;
 import java.util.*;
 
 public class Reserva{
+    //Atributos
     private int codigoR;
-    private Atracciones atraccion;
+    private Atraccion atraccion;
     private List<Persona> grupo;
     
-    public Reserva(int codigoR, Atracciones atraccion){
+    //Constructor
+    public Reserva(int codigoR, Atraccion atraccion){
         this.codigoR = codigoR;
         this.atraccion = atraccion;
         this.grupo = new ArrayList<>();
     }
     
-    public int gedCodigoR(){return codigoR;}
+    //Metodos
+    public int getCodigoR(){return codigoR;}
     public void setCodigoR(int codigoR){this.codigoR = codigoR;}
     
-    public Atracciones getAtraccion(){return atraccion;}
-    public void setAtraccion(Atracciones atraccion) {this.atraccion = atraccion;}
+    public Atraccion getAtraccion(){return atraccion;}
+    public void setAtraccion(Atraccion atraccion) {this.atraccion = atraccion;}
     
     public List<Persona> getGrupo() {return grupo;}
-    public void setGrupo(Persona p) {grupo.add(p);}
+    public void setGrupo(List<Persona> grupo) {this.grupo = grupo;}
     
     public void agregarPersona(Persona p) {
         grupo.add(p);

@@ -10,16 +10,19 @@ package administracionparquetematico;
  */
 
 public class Persona{
+    //Atributos
     private int edad;
     private int altura;
     private int peso;
     
+    //Constructor
     public Persona(int edad, int altura, int peso){
         this.edad = edad;
         this.altura = altura;
         this.peso = peso;
     }
-
+    
+    //Metodos
     public int getEdad() { return edad; }
     public void setEdad(int edad) { this.edad = edad; }
 
