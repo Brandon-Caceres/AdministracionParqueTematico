@@ -37,7 +37,7 @@ public class Reserva{
         grupo.add(p);
     }
 
-    public void agregarPersonas(List<Persona> personas) {
+    public void agregarPersona(List<Persona> personas) {
         grupo.addAll(personas);
     }
     

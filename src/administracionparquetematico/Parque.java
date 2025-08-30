@@ -28,25 +28,14 @@ public class Parque{
     }
     
     public void eliminarAtraccion(int codigo) {
-        Iterator<Map.Entry<Integer, Atraccion>> it = atracciones.entrySet().iterator();
-
-        while(it.hasNext()) {
-            Map.Entry<Integer, Atraccion> atraccion = it.next();
-            if(atraccion.getKey() == codigo) {
-                it.remove();
-                System.out.println("Atracción con código " + codigo + " eliminada.");
-                return;
-            }
-        }
+    if(atracciones.remove(codigo) != null){
+        System.out.println("Atracción con código " + codigo + " eliminada.");
+    } else {
         System.out.println("No se encontró atracción con código " + codigo);
     }
+}
     
     public Atraccion buscarAtraccion(int codigo) {
-        for (Atraccion a : atracciones.values()) {
-            if (a.getCodigo() == codigo) {
-                return a;
-            }
-        }
-        return null;
+        return atracciones.get(codigo);
     }
 }

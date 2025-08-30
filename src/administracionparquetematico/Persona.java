@@ -42,7 +42,7 @@ public class Persona{
         return "Nombre: " + nombre + ", Edad: " + edad + ", Altura: " + altura + ", Peso: " + peso;
     }
     
-    public void informacionPersona(Persona persona){
-        System.out.println(persona);
+    public void informacionPersona(){
+        System.out.println(this);
     }
 }
