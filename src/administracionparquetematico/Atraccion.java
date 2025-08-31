@@ -45,20 +45,28 @@ public class Atraccion{
     
     public void agregarReserva(Reserva reserva){
         reservas.add(reserva);
-        if(reserva.getAtraccion() != this){
-            reserva.setAtraccion(this);
-        }
     }
     
-    public void eliminarReserva(int codigo){
-        for(Iterator<Reserva> it = reservas.iterator(); it.hasNext();){
-            Reserva reserva = it.next();
-            if(reserva.getCodigoR() == codigo){
-                it.remove();
-                System.out.println("Reserva con código " + codigo + " eliminada.");
-                return;
-            }
-        }
-        System.out.println("No se encontró reserva con código " + codigo);
+    public void eliminarReserva(int codigo) {
+        reservas.removeIf(r -> r.getCodigoR() == codigo);
+    }
+    
+    public void eliminarReserva(Reserva r) {
+        reservas.remove(r);
+    }
+    
+    public Reserva buscarReserva(int codigo) {
+        for(Reserva r : reservas) if(r.getCodigoR() == codigo) return r;
+        return null;
+    }
+
+    public void listarReservas() {
+        for(Reserva r : reservas) System.out.println(r);
+    }
+
+    @Override
+    public String toString() {
+        return codigo + " - " + nombre + " (" + descripcion + "), cap: " + cantidadMax 
+                + ", reservas: " + reservas.size();
     }
 }
