@@ -40,10 +40,17 @@ public class Atraccion{
     public int getCantidadMax() { return cantidadMax; }
     public void setCantidadMax(int cantidadMax) { this.cantidadMax = cantidadMax; }
     
-    public List<Reserva> getReservas() {return reservas;}
-    public void setReservas(List<Reserva> reservas) {this.reservas = reservas;}
+    public List<Reserva> getReservas() {
+        return Collections.unmodifiableList(reservas);
+    }
+    public void setReservas(List<Reserva> reservas) {
+        this.reservas = new ArrayList<>(reservas);
+    }
     
-    public void agregarReserva(Reserva reserva){
+    public void agregarReserva(Reserva reserva) {
+        if (buscarReserva(reserva.getCodigoR()) != null) {
+            throw new IllegalArgumentException("Ya existe una reserva con el código " + reserva.getCodigoR());
+        }
         reservas.add(reserva);
     }
     
@@ -56,7 +63,11 @@ public class Atraccion{
     }
     
     public Reserva buscarReserva(int codigo) {
-        for(Reserva r : reservas) if(r.getCodigoR() == codigo) return r;
+        for (Reserva r : reservas) {
+            if (r.getCodigoR() == codigo) {
+                return r;
+            }
+        }
         return null;
     }
 
