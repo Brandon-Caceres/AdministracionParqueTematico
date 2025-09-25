@@ -43,6 +43,10 @@ public class Parque{
         atracciones.put(nuevoCodigo, nuevaAtraccion);
     }
     
+    public void agregarAtraccion(Atraccion nueva){
+        atracciones.put(nueva.getCodigo() , nueva);
+    }
+    
     public Atraccion buscarAtraccion(int codigo) {
         return atracciones.get(codigo);
     }

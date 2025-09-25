@@ -10,26 +10,40 @@ package administracionparquetematico;
  */
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class AdministracionParqueTematico {
-    // El objeto Parque será la única fuente de datos para toda la aplicación.
     private static Parque parque = new Parque();
+    private static final String DIRECTORIO_DATOS = "datos_parque"; // Carpeta para guardar los CSV
 
     public static void main(String[] args) {
-        // Intenta aplicar un look and feel más moderno, nativo del sistema operativo.
+        // --- 1. CARGAR DATOS AL INICIAR LA APLICACIÓN ---
+        PersistenciaParque.cargarDatos(parque, DIRECTORIO_DATOS);
+
+        // Intenta aplicar un estilo visual nativo del sistema operativo
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        // Crear la ventana principal
+        
+        //--- Crear la Ventana Principal ---
         JFrame frame = new JFrame("Administración del Parque Temático");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 350);
-        frame.setLocationRelativeTo(null); // Centrar en la pantalla
+        frame.setLocationRelativeTo(null); // Centrar la ventana
 
-        // Panel de bienvenida y botones
+        // --- 2. GUARDAR DATOS AL CERRAR LA VENTANA ---
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                PersistenciaParque.guardarDatos(parque, DIRECTORIO_DATOS);
+                System.out.println("Datos guardados correctamente. Saliendo del sistema.");
+            }
+        });
+        
+        //--- Panel Principal y Botones ---
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
@@ -37,7 +51,6 @@ public class AdministracionParqueTematico {
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
         panel.add(welcomeLabel, BorderLayout.NORTH);
 
-        // Panel para los botones
         JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 15, 15));
         JButton btnGestionAtracciones = new JButton("Gestión de Atracciones");
         JButton btnGestionReservas = new JButton("Gestión de Reservas");
@@ -49,13 +62,12 @@ public class AdministracionParqueTematico {
         buttonPanel.add(btnGestionReservas);
         panel.add(buttonPanel, BorderLayout.CENTER);
 
-        // Acción para el botón de atracciones: abre el diálogo de gestión de atracciones.
+        //--- Acciones de los Botones ---
         btnGestionAtracciones.addActionListener(e -> {
             GestionAtraccionesDialog dialog = new GestionAtraccionesDialog(frame, parque);
             dialog.setVisible(true);
         });
 
-        // Acción para el botón de reservas: abre el diálogo de gestión de reservas.
         btnGestionReservas.addActionListener(e -> {
             GestionReservasDialog dialog = new GestionReservasDialog(frame, parque);
             dialog.setVisible(true);
