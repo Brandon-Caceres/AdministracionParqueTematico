@@ -20,6 +20,7 @@ public class Atraccion{
     LocalTime horaApertura;
     LocalTime horaCierre;
     private List<Reserva> reservas;
+    private int contadorCodigosReserva = 1;
     
     //Constructor
     public Atraccion(int codigo, String nombre, String descripcion, int cantidadMax, String apertura, String cierre) {
@@ -56,6 +57,37 @@ public class Atraccion{
     }
     public void setReservas(List<Reserva> reservas) {
         this.reservas = new ArrayList<>(reservas);
+    }
+    
+    public Reserva crearNuevaReserva(String fecha, String hora, List<Persona> grupoInicial) {
+        LocalTime horaReserva = LocalTime.parse(hora);
+        int numeroDePersonas = grupoInicial.size();
+
+        // 1. VERIFICAR CAPACIDAD DISPONIBLE
+        int capacidadOcupada = getCapacidadOcupadaEn(horaReserva);
+        if ((capacidadOcupada + numeroDePersonas) > this.cantidadMax) {
+            throw new IllegalArgumentException("Capacidad excedida. Solo quedan " + (this.cantidadMax - capacidadOcupada) + " cupos para esa hora.");
+        }
+        // 2. Si hay capacidad, se crea la reserva
+        int nuevoCodigoReserva = contadorCodigosReserva++;
+        Reserva nuevaReserva = new Reserva(nuevoCodigoReserva, this.nombre, fecha, hora, numeroDePersonas);
+        // Se agrega el grupo completo a la reserva
+        for(Persona p : grupoInicial){
+            nuevaReserva.agregarPersona(p);
+        }
+        
+        this.reservas.add(nuevaReserva);
+        return nuevaReserva;
+    }
+    
+    public int getCapacidadOcupadaEn(LocalTime hora) {
+        int totalPersonas = 0;
+        for (Reserva r : this.reservas) {
+            if (r.getHora().equals(hora)) {
+                totalPersonas += r.getNumeroPersonas();
+            }
+        }
+        return totalPersonas;
     }
     
     public void agregarReserva(Reserva reserva) {

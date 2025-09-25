@@ -13,6 +13,7 @@ import java.util.*;
 public class Parque{
     //Atributo
     private Map<Integer, Atraccion> atracciones;
+    private int contadorCodigosAtraccion = 1;
     
     //Constructor
     public Parque() {
@@ -35,19 +36,11 @@ public class Parque{
         this.atracciones = new HashMap<>(atracciones);
     }
     
-    public void agregarAtraccion(Atraccion atraccion) {
-        if (atracciones.containsKey(atraccion.getCodigo())) {
-            throw new IllegalArgumentException("Ya existe una atracción con el código " + atraccion.getCodigo());
-        }
-        atracciones.put(atraccion.getCodigo(), atraccion);
-    }
-    
-    public void agregarAtraccion(int codigo, String nombre, String tipo, int capacidad, String apertura, String cierre) {
-        if (atracciones.containsKey(codigo)) {
-            throw new IllegalArgumentException("Ya existe una atracción con el código " + codigo);
-        }
-        Atraccion nuevaAtraccion = new Atraccion(codigo, nombre, tipo, capacidad, apertura, cierre);
-        atracciones.put(codigo, nuevaAtraccion);
+    public void agregarAtraccion(String nombre, String descripcion, int capacidad, String apertura, String cierre) {
+        int nuevoCodigo = contadorCodigosAtraccion++;
+        
+        Atraccion nuevaAtraccion = new Atraccion(nuevoCodigo, nombre, descripcion, capacidad, apertura, cierre);
+        atracciones.put(nuevoCodigo, nuevaAtraccion);
     }
     
     public Atraccion buscarAtraccion(int codigo) {

@@ -18,13 +18,15 @@ public class Reserva{
     private String fecha;
     private LocalTime hora;
     private List<Persona> grupo;
+    private int numeroPersonas;
     
     //Constructor
-    public Reserva(int codigoR, String atraccion ,String fecha, String horaActual){
+    public Reserva(int codigoR, String atraccion ,String fecha, String horaActual, int numeroPersonas){
         this.codigoR = codigoR;
         this.atraccion = atraccion;
         this.fecha = fecha;
         this.hora = LocalTime.parse(horaActual);
+        this.numeroPersonas = numeroPersonas;
         this.grupo = new ArrayList<>();
     }
     
@@ -39,7 +41,10 @@ public class Reserva{
     public void setFecha(String fecha) {this.fecha = fecha;}
     
     public LocalTime getHora(){return hora;}
-    public void SetHora(String nueva){this.hora = LocalTime.parse(nueva);}
+    public void setHora(String nueva){this.hora = LocalTime.parse(nueva);}
+    
+    public int getNumeroPersonas() {return numeroPersonas;}
+    public void setNumeroPersonas(int numeroPersonas){this.numeroPersonas = numeroPersonas;}
     
     public List<Persona> getGrupo() {
         return new ArrayList<>(grupo);

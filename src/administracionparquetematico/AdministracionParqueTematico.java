@@ -8,223 +8,60 @@ package administracionparquetematico;
  *
  * @author Brandon
  */
-import java.time.LocalTime;
-import java.util.*;
+import javax.swing.*;
+import java.awt.*;
 
 public class AdministracionParqueTematico {
+    // El objeto Parque será la única fuente de datos para toda la aplicación.
+    private static Parque parque = new Parque();
+
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        Parque parque = new Parque();
+        // Intenta aplicar un look and feel más moderno, nativo del sistema operativo.
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Crear la ventana principal
+        JFrame frame = new JFrame("Administración del Parque Temático");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(500, 350);
+        frame.setLocationRelativeTo(null); // Centrar en la pantalla
+
+        // Panel de bienvenida y botones
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        int opcion;
-        do {
-            System.out.println("=== Menú Parque ===");
-            System.out.println("1. Gestión de atracciones");
-            System.out.println("2. Gestión de reservas");
-            System.out.println("3. Salir");
-            opcion = sc.nextInt();
-            sc.nextLine();
+        JLabel welcomeLabel = new JLabel("Sistema de Gestión", SwingConstants.CENTER);
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        panel.add(welcomeLabel, BorderLayout.NORTH);
 
-            switch(opcion) {
-                case 1:
-                    menuGestionAtracciones(parque, sc);
-                    break;
-                case 2:
-                    menuGestionReservas(parque, sc);
-                    break;
-                case 3:
-                    System.out.println("Saliendo del sistema...");
-                    break;
-                default:
-                    System.out.println("Opcion invalida");
-                    break;
-            }
-        } while(opcion != 3);
-    }
-    
-    private static void menuGestionAtracciones(Parque parque, Scanner sc){
-        int opcion;
-        do {
-            System.out.println("\n=== Gestión de Atracciones ===");
-            System.out.println("1. Ver atracciones");
-            System.out.println("2. Agregar atracción");
-            System.out.println("3. Buscar atracción por código");
-            System.out.println("4. Eliminar atracción");
-            System.out.println("5. Volver");
-            System.out.print("Elige una opción: ");
-            opcion = sc.nextInt();
-            sc.nextLine();
+        // Panel para los botones
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 15, 15));
+        JButton btnGestionAtracciones = new JButton("Gestión de Atracciones");
+        JButton btnGestionReservas = new JButton("Gestión de Reservas");
+        
+        btnGestionAtracciones.setFont(new Font("Arial", Font.PLAIN, 18));
+        btnGestionReservas.setFont(new Font("Arial", Font.PLAIN, 18));
+        
+        buttonPanel.add(btnGestionAtracciones);
+        buttonPanel.add(btnGestionReservas);
+        panel.add(buttonPanel, BorderLayout.CENTER);
 
-            switch (opcion) {
-                case 1:{
-                    parque.listarAtracciones();
-                    break;
-                }
-                case 2: {
-                    System.out.print("Código: ");
-                    int codigo = sc.nextInt();
-                    sc.nextLine();
-                    System.out.print("Nombre: ");
-                    String nombre = sc.nextLine();
-                    System.out.print("Descripción: ");
-                    String descripcion = sc.nextLine();
-                    System.out.print("Capacidad máxima: ");
-                    int capacidad = sc.nextInt();
-                    sc.nextLine();
-                    System.out.println("Hora apertura: ");
-                    String apertura = sc.nextLine();
-                    System.out.println("Hora cierre: ");
-                    String cierre = sc.nextLine();
-                    parque.agregarAtraccion(codigo, nombre, descripcion, capacidad, apertura, cierre);
-                    break;
-                }
-                case 3: {
-                    System.out.print("Código de atracción: ");
-                    int codigo = sc.nextInt();
-                    sc.nextLine();
-                    Atraccion atraccion = parque.buscarAtraccion(codigo);
-                    if (atraccion != null) {
-                        System.out.println("Atracción encontrada: " + atraccion);
-                    } 
-                    else {
-                        System.out.println("No se encontró la atracción.");
-                    }
-                    break;
-                }
-                case 4: {
-                    System.out.print("Código de atracción a eliminar: ");
-                    int codigo = sc.nextInt();
-                    sc.nextLine();
-                    parque.eliminarAtraccion(codigo);
-                    break;
-                }
-                case 5: 
-                    System.out.println("Volviendo al menú principal...");
-                    break;
-                default:
-                    System.out.println("Opción no válida.");
-                    break;
-            }
-        } while (opcion != 5);
-    }
-    
-    private static void menuGestionReservas(Parque parque, Scanner sc) {
-    int opcion;
-        do {
-            System.out.println("\n=== Gestión de Reservas ===");
-            System.out.println("1. Insertar reserva en una atracción");
-            System.out.println("2. Listar reservas de una atracción");
-            System.out.println("3. Eliminar reserva de una atracción");
-            System.out.println("4. Agregar personas a una reserva");
-            System.out.println("5. Volver");
-            System.out.print("Elige una opción: ");
-            opcion = sc.nextInt();
-            sc.nextLine();
+        // Acción para el botón de atracciones: abre el diálogo de gestión de atracciones.
+        btnGestionAtracciones.addActionListener(e -> {
+            GestionAtraccionesDialog dialog = new GestionAtraccionesDialog(frame, parque);
+            dialog.setVisible(true);
+        });
 
-            switch (opcion) {
-                case 1: {
-                    System.out.print("Código de atracción: ");
-                    int codigoAtr = sc.nextInt();
-                    sc.nextLine();
-                    Atraccion atr = parque.buscarAtraccion(codigoAtr);
-                    if (atr != null) {
-                        System.out.print("Código de reserva: ");
-                        int codReserva = sc.nextInt();
-                        sc.nextLine();
-                        System.out.print("Fecha de reserva: ");
-                        String fecha = sc.nextLine();
-                        LocalTime horaReserva;
-                        String hora;
-                        while (true){
-                            System.out.println("Hora de reserva: ");
-                            hora = sc.nextLine();
-                            try{
-                                horaReserva = LocalTime.parse(hora);
-                                if (atr.estaAbierta(horaReserva)){
-                                    break;
-                                }
-                                else{
-                                    System.out.println("La atracción está cerrada a esa hora. Intente otra hora.");
-                                }
-                            }
-                            catch (Exception e){
-                                System.out.println("Formato inválido. Use HH:mm, por ejemplo: 13:20");
-                            }
-                        }
-                        System.out.print("Nombre de la persona responsable: ");
-                        String nombre = sc.nextLine();
-                        System.out.print("Edad de la persona: ");
-                        int edad = sc.nextInt();
-                        sc.nextLine();
-                        Reserva r = new Reserva(codReserva, atr.getNombre(), fecha, hora);
-                        r.agregarPersona(new Persona(nombre, edad));
-                        atr.agregarReserva(r);
-                    } 
-                    else {
-                        System.out.println("Atracción no encontrada.");
-                    }
-                    break;
-                }
-                case 2: {
-                    System.out.print("Código de atracción: ");
-                    int codigoAtr = sc.nextInt();
-                    sc.nextLine();
-                    Atraccion atr = parque.buscarAtraccion(codigoAtr);
-                    if (atr != null) {
-                        atr.listarReservas();
-                    } 
-                    else {
-                        System.out.println("Atracción no encontrada.");
-                    }
-                    break;
-                }
-                case 3: {
-                    System.out.print("Código de atracción: ");
-                    int codigoAtr = sc.nextInt();
-                    sc.nextLine();
-                    Atraccion atr = parque.buscarAtraccion(codigoAtr);
-                    if (atr != null) {
-                        System.out.print("Código de reserva a eliminar: ");
-                        int codReserva = sc.nextInt();
-                        sc.nextLine();
-                        atr.eliminarReserva(codReserva);
-                    } 
-                    else {
-                        System.out.println("Atracción no encontrada.");
-                    }
-                    break;
-                }
-                case 4: {
-                    System.out.print("Código de atracción: ");
-                    int codigoAtr = sc.nextInt();
-                    sc.nextLine();
-                    Atraccion atr = parque.buscarAtraccion(codigoAtr);
-                    if (atr != null) {
-                        System.out.print("Código de reserva: ");
-                        int codReserva = sc.nextInt();
-                        sc.nextLine();
-                        for (Reserva r : atr.getReservas()) {
-                            if (r.getCodigoR() == codReserva) {
-                                System.out.print("Nombre de la persona: ");
-                                String nombre = sc.nextLine();
-                                System.out.print("Edad de la persona: ");
-                                int edad = sc.nextInt();
-                                sc.nextLine();
-                                r.agregarPersona(new Persona(nombre, edad));
-                            }
-                        }
-                    } 
-                    else {
-                        System.out.println("Atracción no encontrada.");
-                    }
-                    break;
-                }
-                case 5:
-                    System.out.println("Volviendo al menú principal...");
-                    break;
-                default:
-                    System.out.println("Opción no válida.");
-            }
-        } while (opcion != 5);
+        // Acción para el botón de reservas: abre el diálogo de gestión de reservas.
+        btnGestionReservas.addActionListener(e -> {
+            GestionReservasDialog dialog = new GestionReservasDialog(frame, parque);
+            dialog.setVisible(true);
+        });
+
+        frame.add(panel);
+        frame.setVisible(true);
     }
 }
