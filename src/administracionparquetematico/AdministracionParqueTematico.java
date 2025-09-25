@@ -8,14 +8,13 @@ package administracionparquetematico;
  *
  * @author Brandon
  */
+import java.time.LocalTime;
 import java.util.*;
 
 public class AdministracionParqueTematico {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         Parque parque = new Parque();
-        
-        parque.cargarDatosIniciales();
         
         int opcion;
         do {
@@ -72,7 +71,11 @@ public class AdministracionParqueTematico {
                     System.out.print("Capacidad máxima: ");
                     int capacidad = sc.nextInt();
                     sc.nextLine();
-                    parque.agregarAtraccion(codigo, nombre, descripcion, capacidad);
+                    System.out.println("Hora apertura: ");
+                    String apertura = sc.nextLine();
+                    System.out.println("Hora cierre: ");
+                    String cierre = sc.nextLine();
+                    parque.agregarAtraccion(codigo, nombre, descripcion, capacidad, apertura, cierre);
                     break;
                 }
                 case 3: {
@@ -101,7 +104,6 @@ public class AdministracionParqueTematico {
                 default:
                     System.out.println("Opción no válida.");
                     break;
-
             }
         } while (opcion != 5);
     }
@@ -131,12 +133,30 @@ public class AdministracionParqueTematico {
                         sc.nextLine();
                         System.out.print("Fecha de reserva: ");
                         String fecha = sc.nextLine();
+                        LocalTime horaReserva;
+                        String hora;
+                        while (true){
+                            System.out.println("Hora de reserva: ");
+                            hora = sc.nextLine();
+                            try{
+                                horaReserva = LocalTime.parse(hora);
+                                if (atr.estaAbierta(horaReserva)){
+                                    break;
+                                }
+                                else{
+                                    System.out.println("La atracción está cerrada a esa hora. Intente otra hora.");
+                                }
+                            }
+                            catch (Exception e){
+                                System.out.println("Formato inválido. Use HH:mm, por ejemplo: 13:20");
+                            }
+                        }
                         System.out.print("Nombre de la persona responsable: ");
                         String nombre = sc.nextLine();
                         System.out.print("Edad de la persona: ");
                         int edad = sc.nextInt();
                         sc.nextLine();
-                        Reserva r = new Reserva(codReserva, atr.getNombre(), fecha); // si manejas fecha, agregarla
+                        Reserva r = new Reserva(codReserva, atr.getNombre(), fecha, hora);
                         r.agregarPersona(new Persona(nombre, edad));
                         atr.agregarReserva(r);
                     } 
