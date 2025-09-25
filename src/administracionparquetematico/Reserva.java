@@ -8,6 +8,7 @@ package administracionparquetematico;
  *
  * @author Brandon
  */
+import java.time.*;
 import java.util.*;
 
 public class Reserva{
@@ -15,13 +16,15 @@ public class Reserva{
     private int codigoR;
     private String atraccion;
     private String fecha;
+    private LocalTime hora;
     private List<Persona> grupo;
     
     //Constructor
-    public Reserva(int codigoR, String atraccion ,String fecha){
+    public Reserva(int codigoR, String atraccion ,String fecha, String horaActual){
         this.codigoR = codigoR;
         this.atraccion = atraccion;
         this.fecha = fecha;
+        this.hora = LocalTime.parse(horaActual);
         this.grupo = new ArrayList<>();
     }
     
@@ -35,31 +38,49 @@ public class Reserva{
     public String getFecha(){return fecha;}
     public void setFecha(String fecha) {this.fecha = fecha;}
     
-    public List<Persona> getGrupo() {return grupo;}
-    public void setGrupo(List<Persona> grupo) {this.grupo = grupo;}
+    public LocalTime getHora(){return hora;}
+    public void SetHora(String nueva){this.hora = LocalTime.parse(nueva);}
+    
+    public List<Persona> getGrupo() {
+        return new ArrayList<>(grupo);
+    }
+    
+    public void setGrupo(List<Persona> grupo) {
+        if (grupo == null) {
+            throw new IllegalArgumentException("La lista de personas no puede ser nula.");
+        }
+        this.grupo = new ArrayList<>(grupo);
+    }
     
     public void agregarPersona(Persona p) {
+        if (p == null) {
+            throw new IllegalArgumentException("No se puede agregar una persona nula.");
+        }
         grupo.add(p);
     }
-
+    
     public void agregarPersona(List<Persona> personas) {
+        if (personas == null || personas.contains(null)) {
+            throw new IllegalArgumentException("La lista de personas no puede contener elementos nulos.");
+        }
         grupo.addAll(personas);
     }
     
-    public void agregarPersona(String nombre, int edad/*, int altura, int peso*/) { 
+    public void agregarPersona(String nombre, int edad/*, int altura, int peso*/) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede ser nulo o vacío.");
+        }
         grupo.add(new Persona(nombre, edad/*, altura, peso*/)); 
     }
     
-    public void eliminarPersona(String name){
-        for(Iterator<Persona> it = grupo.iterator(); it.hasNext();){
-            Persona persona = it.next();
-            if(persona.getNombre().equals(name)){
-                it.remove();
-                System.out.println("La persona " + name + " ha sido eliminada de la reserva");
-                return;
-            }
+    public void eliminarPersona(String nombre) {
+        boolean eliminada = grupo.removeIf(p -> p.getNombre().equals(nombre));
+        
+        if (eliminada) {
+            System.out.println("La persona " + nombre + " ha sido eliminada de la reserva");
+        } else {
+            System.out.println("No se encontró persona con nombre " + nombre);
         }
-        System.out.println("No se encontró persona con nombre " + name);
     }
     
     @Override
@@ -68,6 +89,7 @@ public class Reserva{
         sb.append("Reserva ").append(codigoR)
         .append(" | Atracción: ").append(atraccion)
         .append(" | Fecha: ").append(fecha)
+        .append(" | Hora: ").append(hora)
         .append(" | Personas: ").append(grupo.size()).append("\n");
 
         for (Persona p : grupo) {

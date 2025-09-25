@@ -20,23 +20,38 @@ public class Parque{
     }
     
     //Metodos
-    public Map<Integer, Atraccion> getAtracciones() {return Collections.unmodifiableMap(atracciones);}
-    public void setAtracciones(Map<Integer, Atraccion> atracciones) {this.atracciones = atracciones;}
+    public Map<Integer, Atraccion> getAtracciones() {
+        return new HashMap<>(atracciones);
+    }
     
-    public void agregarAtraccion(Atraccion atraccion){
+    public void setAtracciones(Map<Integer, Atraccion> atracciones) {
+        if (atracciones == null) {
+            throw new IllegalArgumentException("El Map de atracciones no puede ser nulo.");
+        }
+        this.atracciones = new HashMap<>(atracciones);
+    }
+    
+    public void agregarAtraccion(Atraccion atraccion) {
+        if (atracciones.containsKey(atraccion.getCodigo())) {
+            throw new IllegalArgumentException("Ya existe una atracción con el código " + atraccion.getCodigo());
+        }
         atracciones.put(atraccion.getCodigo(), atraccion);
     }
     
-    public void agregarAtraccion(int codigo, String nombre, String tipo, int capacidad) {
-        atracciones.put(codigo, new Atraccion(codigo, nombre, tipo, capacidad));
+    public void agregarAtraccion(int codigo, String nombre, String tipo, int capacidad, String apertura, String cierre) {
+        if (atracciones.containsKey(codigo)) {
+            throw new IllegalArgumentException("Ya existe una atracción con el código " + codigo);
+        }
+        Atraccion nuevaAtraccion = new Atraccion(codigo, nombre, tipo, capacidad, apertura, cierre);
+        atracciones.put(codigo, nuevaAtraccion);
     }
     
     public Atraccion buscarAtraccion(int codigo) {
         return atracciones.get(codigo);
     }
 
-    public void eliminarAtraccion(int codigo) {
-        atracciones.remove(codigo);
+    public boolean eliminarAtraccion(int codigo) {
+        return atracciones.remove(codigo) != null;
     }
 
     public void listarAtracciones() {
@@ -45,8 +60,10 @@ public class Parque{
         }
     }
     
+    
+    
     //Datos Iniciales
-    public void cargarDatosIniciales(){
+    /*public void cargarDatosIniciales(){
         Atraccion atraccion1 = new Atraccion(1, "Montaña Rusa", "Adrenalina", 20);
         Atraccion atraccion2 = new Atraccion(2, "Carrusel", "Infantil", 15);
         Atraccion atraccion3 = new Atraccion(3, "Casa del Terror", "Terror", 10);
@@ -64,5 +81,5 @@ public class Parque{
         this.agregarAtraccion(atraccion1);
         this.agregarAtraccion(atraccion2);
         this.agregarAtraccion(atraccion3);
-    }
+    }*/
 }

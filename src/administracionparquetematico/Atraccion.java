@@ -8,6 +8,7 @@ package administracionparquetematico;
  *
  * @author Brandon
  */
+import java.time.*;
 import java.util.*;
 
 public class Atraccion{
@@ -16,14 +17,18 @@ public class Atraccion{
     private String nombre;
     private String descripcion;
     private int cantidadMax;
+    LocalTime horaApertura;
+    LocalTime horaCierre;
     private List<Reserva> reservas;
     
     //Constructor
-    public Atraccion(int codigo, String nombre, String descripcion, int cantidadMax) {
+    public Atraccion(int codigo, String nombre, String descripcion, int cantidadMax, String apertura, String cierre) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.cantidadMax = cantidadMax;
+        this.horaApertura = LocalTime.parse(apertura);
+        this.horaCierre = LocalTime.parse(cierre);
         this.reservas = new ArrayList<>();
     }
     
@@ -39,6 +44,12 @@ public class Atraccion{
 
     public int getCantidadMax() { return cantidadMax; }
     public void setCantidadMax(int cantidadMax) { this.cantidadMax = cantidadMax; }
+    
+    public LocalTime getApertura(){return horaApertura;}
+    public void setApertura(String nueva){this.horaApertura = LocalTime.parse(nueva);}
+    
+    public LocalTime getCierre(){return horaCierre;}
+    public void setCierre(String nueva){this.horaCierre = LocalTime.parse(nueva);}
     
     public List<Reserva> getReservas() {
         return Collections.unmodifiableList(reservas);
@@ -73,6 +84,15 @@ public class Atraccion{
 
     public void listarReservas() {
         for(Reserva r : reservas) System.out.println(r);
+    }
+    
+    public boolean estaAbierta(LocalTime hora){
+        if (horaCierre.isAfter(horaApertura)){
+            return !hora.isBefore(horaApertura) && hora.isBefore(horaCierre);
+        }
+        else{
+            return !hora.isBefore(horaApertura) || hora.isBefore(horaCierre);
+        }
     }
 
     @Override
