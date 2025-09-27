@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package administracionparquetematico;
+package com;
 
 /**
  *
@@ -53,6 +53,25 @@ public class Parque{
 
     public boolean eliminarAtraccion(int codigo) {
         return atracciones.remove(codigo) != null;
+    }
+    
+    public void actualizarContadorAtracciones() {
+        if (this.atracciones.isEmpty()) {
+            this.contadorCodigosAtraccion = 1; // O el valor inicial que uses
+            return;
+        }
+
+        // Busca el código más alto entre todas las atracciones existentes
+        int maxCodigo = 0;
+        for (Atraccion a : this.atracciones.values()) {
+            if (a.getCodigo() > maxCodigo) {
+                maxCodigo = a.getCodigo();
+            }
+        }
+    
+        // Establece el próximo código a ser uno más que el máximo encontrado
+        this.contadorCodigosAtraccion = maxCodigo + 1;
+        System.out.println("Contador de atracciones actualizado. Próximo código: " + this.contadorCodigosAtraccion);
     }
 
     public void listarAtracciones() {

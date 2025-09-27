@@ -1,5 +1,4 @@
 codigo,nombre,descripcion,cantidadMax,horaApertura,horaCierre,edadMinima,alturaMinimaCm
-1,Montaña Rusa Infernal,"Un viaje emocionante con giros, caídas y alta velocidad.",24,10:00,22:00,12,140,5
 2,Rápidos del Aconcagua,Un refrescante y movido viaje por aguas turbulentas. ¡Salpicaduras garantizadas!,12,11:00,20:00,8,120,10
 3,Carrusel Mágico,"Un clásico para toda la familia, con caballos de fantasía y música encantadora.",40,09:00,21:00,0,0,8
 4,Las Tazas Locas,Gira sin parar en estas coloridas tazas. Tú controlas la velocidad del mareo.,16,09:00,20:00,0,90,5
@@ -8,4 +7,3 @@ codigo,nombre,descripcion,cantidadMax,horaApertura,horaCierre,edadMinima,alturaM
 7,Espectáculo de Magia Austral,Show en vivo con ilusiones y trucos sorprendentes. Funciones cada hora.,150,13:00,21:00,0,0,25
 8,Rueda Panorámica de los Andes,Disfruta de las mejores vistas del parque y sus alrededores desde las alturas.,32,10:00,23:00,0,0,12
 9,La Casona del Terror,Recorrido a oscuras con sustos y personajes de leyendas chilenas.,8,11:00,23:00,13,0,10
-10,Viaje al Centro de la Tierra,Paseo en bote por cuevas misteriosas y paisajes subterráneos.,18,10:00,21:00,0,0,15

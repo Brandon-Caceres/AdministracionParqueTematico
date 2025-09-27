@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package administracionparquetematico;
+package com;
 
 /**
  *
@@ -90,11 +90,11 @@ public class Atraccion{
         }
     }
     
-    public Reserva crearNuevaReserva(String fecha, LocalTime hora, List<Persona> grupoInicial) throws CapacidadExcedidaException {
+    public Reserva crearNuevaReserva(String fecha, LocalTime hora, List<Persona> grupoInicial) 
+        throws CapacidadExcedidaException, ReservaCompletaException {
     
         // VALIDACIÓN 1: Horario válido
         if (duracion > 0 && hora.getMinute() % this.duracion != 0) {
-            // Esta puede seguir siendo una IllegalArgumentException, ya que es un error de "parámetro inválido"
             throw new IllegalArgumentException("La hora de la reserva (" + hora + ") no es un horario válido para esta atracción.");
         }
     
@@ -102,7 +102,6 @@ public class Atraccion{
         int numeroDePersonas = grupoInicial.size();
         int capacidadOcupada = getCapacidadOcupadaEn(hora);
         if ((capacidadOcupada + numeroDePersonas) > this.cantidadMax) {
-            // AQUÍ ES DONDE LANZAS TU EXCEPCIÓN PERSONALIZADA
             throw new CapacidadExcedidaException("Capacidad excedida. Solo quedan " + (this.cantidadMax - capacidadOcupada) + " cupos para esa hora.");
         }
     
@@ -110,6 +109,7 @@ public class Atraccion{
         int nuevoCodigoReserva = contadorCodigosReserva++;
         Reserva nuevaReserva = new Reserva(nuevoCodigoReserva, this.nombre, fecha, hora, numeroDePersonas);
     
+        // Este bucle ahora es válido porque el método completo declara la excepción
         for(Persona p : grupoInicial){
             nuevaReserva.agregarPersona(p);
         }

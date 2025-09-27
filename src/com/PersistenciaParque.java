@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package administracionparquetematico;
+package com;
 
 /**
  *
@@ -189,7 +189,14 @@ public class PersistenciaParque {
                     Reserva res = atr.buscarReserva(codReserva);
                     if (res != null) {
                         Persona per = new Persona(campos[2], Integer.parseInt(campos[3]), Integer.parseInt(campos[4]));
-                        res.agregarPersona(per);
+                        try {
+                            // Se intenta agregar la persona a la reserva
+                            res.agregarPersona(per);
+                        } catch (ReservaCompletaException e) {
+                            // Si la reserva ya está llena, se captura el error
+                            // Se imprime un aviso en la consola y el programa continúa
+                            System.err.println("Aviso al cargar: " + e.getMessage() + " [Reserva " + codReserva + "]");
+                        }
                     }
                 }
             }
@@ -274,5 +281,5 @@ public static void generarReporteTXT(Parque parque, File archivo) {
         System.err.println("Error al generar el reporte TXT: " + e.getMessage());
         // Podríamos lanzar una excepción para que la GUI la muestre al usuario
     }
-}
+    }
 }
