@@ -73,6 +73,46 @@ public class Parque{
         this.contadorCodigosAtraccion = maxCodigo + 1;
         System.out.println("Contador de atracciones actualizado. Próximo código: " + this.contadorCodigosAtraccion);
     }
+    
+    public String generarEstadisticas() {
+        if (atracciones.isEmpty()) {
+            return "No hay datos para generar estadísticas.";
+        }
+
+        int totalReservas = 0;
+        int totalVisitantes = 0;
+        Atraccion atraccionMasPopular = null;
+        int maxReservas = -1;
+
+        for (Atraccion atr : atracciones.values()) {
+            int reservasEnAtraccion = atr.getReservas().size();
+            totalReservas += reservasEnAtraccion;
+
+            for (Reserva res : atr.getReservas()) {
+                totalVisitantes += res.getGrupo().size();
+            }
+
+            if (reservasEnAtraccion > maxReservas) {
+                maxReservas = reservasEnAtraccion;
+                atraccionMasPopular = atr;
+            }
+        }
+
+        double promedioVisitantesPorReserva = (totalReservas > 0) ? (double) totalVisitantes / totalReservas : 0;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Estadísticas Generales del Parque\n");
+        sb.append("---------------------------------\n");
+        sb.append(String.format("Número Total de Atracciones: %d\n", atracciones.size()));
+        sb.append(String.format("Número Total de Reservas: %d\n", totalReservas));
+        sb.append(String.format("Número Total de Visitantes Registrados: %d\n", totalVisitantes));
+        sb.append(String.format("Promedio de Visitantes por Reserva: %.2f\n", promedioVisitantesPorReserva));
+        if (atraccionMasPopular != null) {
+            sb.append(String.format("Atracción más Popular: %s (%d reservas)\n", atraccionMasPopular.getNombre(), maxReservas));
+        }
+    
+        return sb.toString();
+    }
 
     public void listarAtracciones() {
         for(Atraccion a : atracciones.values()) {
