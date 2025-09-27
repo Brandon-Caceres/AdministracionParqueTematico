@@ -9,7 +9,10 @@ package administracionparquetematico;
  * @author Brandon
  */
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.time.format.DateTimeParseException;
 
@@ -17,6 +20,8 @@ public class GestionAtraccionesDialog extends JDialog {
     private Parque parque;
     private JTable table;
     private DefaultTableModel tableModel;
+    private JTextField campoBusqueda;
+    private TableRowSorter<DefaultTableModel> sorter;
 
     public GestionAtraccionesDialog(Frame owner, Parque parque) {
         super(owner, "Gestión de Atracciones", true);
@@ -36,7 +41,35 @@ public class GestionAtraccionesDialog extends JDialog {
         };
         table = new JTable(tableModel);
         actualizarTabla();
+           
+        // --- 1. CREAR E INSTALAR EL ORDENADOR/FILTRO DE LA TABLA ---
+        sorter = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorter);
 
+        // --- 2. CREAR EL PANEL DE BÚSQUEDA ---
+        JPanel panelBusqueda = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        panelBusqueda.add(new JLabel("Buscar por código o nombre:"));
+        campoBusqueda = new JTextField(25); // Campo de texto con un ancho de 25 caracteres
+        panelBusqueda.add(campoBusqueda);
+
+        // --- 3. AÑADIR LISTENER PARA BÚSQUEDA EN TIEMPO REAL ---
+        campoBusqueda.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+        });
+        
+        add(panelBusqueda, BorderLayout.NORTH);
+        
         //--- Panel de Botones ---
         JPanel buttonPanel = new JPanel();
         JButton btnAgregar = new JButton("Agregar Atracción");
@@ -56,7 +89,17 @@ public class GestionAtraccionesDialog extends JDialog {
         add(new JScrollPane(table), BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
     }
-
+    
+    private void filtrarTabla() {
+        String texto = campoBusqueda.getText();
+        if (texto.trim().length() == 0) {
+            sorter.setRowFilter(null);
+        } else {
+            // Especificamos las columnas en las que queremos buscar: 0 (Código) y 1 (Nombre)
+            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto, 0, 1));
+        }
+    }
+    
     private void actualizarTabla() {
         tableModel.setRowCount(0); // Limpia la tabla
         if (parque.getAtraccionesCollection() != null) {

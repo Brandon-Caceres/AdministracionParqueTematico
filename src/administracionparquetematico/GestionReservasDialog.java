@@ -9,17 +9,20 @@ package administracionparquetematico;
  * @author Brandon
  */
 import com.toedter.calendar.JDateChooser;
-import java.util.Calendar;
-import java.util.Date;
-import java.time.ZoneId;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class GestionReservasDialog extends JDialog {
@@ -27,6 +30,8 @@ public class GestionReservasDialog extends JDialog {
     private JComboBox<AtraccionWrapper> atraccionesComboBox;
     private JTable table;
     private DefaultTableModel tableModel;
+    private JTextField campoBusquedaReserva;
+    private TableRowSorter<DefaultTableModel> sorterReservas;
 
     public GestionReservasDialog(Frame owner, Parque parque) {
         super(owner, "Gestión de Reservas", true);
@@ -42,6 +47,11 @@ public class GestionReservasDialog extends JDialog {
         actualizarComboBox();
         topPanel.add(atraccionesComboBox);
         atraccionesComboBox.addActionListener(e -> actualizarTablaReservas());
+        
+        // --- AÑADIR BARRA DE BÚSQUEDA AL PANEL SUPERIOR ---
+        topPanel.add(new JLabel("   Filtrar por Código o Fecha:"));
+        campoBusquedaReserva = new JTextField(15);
+        topPanel.add(campoBusquedaReserva);
 
         //--- Tabla de Reservas ---
         String[] columnNames = {"Cod. Reserva", "Fecha", "Hora", "Personas (Registradas / Total)"};
@@ -52,7 +62,25 @@ public class GestionReservasDialog extends JDialog {
             }
         };
         table = new JTable(tableModel);
+        
+        // --- Instalar el filtro en la tabla ---
+        sorterReservas = new TableRowSorter<>(tableModel);
+        table.setRowSorter(sorterReservas);
 
+        //--- Lógica de los Componentes ---
+        atraccionesComboBox.addActionListener(e -> {
+            // Al cambiar de atracción, se limpia la búsqueda y se actualiza la tabla
+            campoBusquedaReserva.setText(""); 
+            actualizarTablaReservas();
+        });
+
+        campoBusquedaReserva.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { filtrarTablaReservas(); }
+            public void removeUpdate(DocumentEvent e) { filtrarTablaReservas(); }
+            public void changedUpdate(DocumentEvent e) { filtrarTablaReservas(); }
+        });
+
+        
         //--- Panel de Botones ---
         JPanel buttonPanel = new JPanel();
 
@@ -82,6 +110,16 @@ public class GestionReservasDialog extends JDialog {
         }
     }
 
+    private void filtrarTablaReservas() {
+        String texto = campoBusquedaReserva.getText();
+        if (texto.trim().length() == 0) {
+            sorterReservas.setRowFilter(null);
+        } else {
+            // Busca en la columna 0 (Código) y 1 (Fecha)
+            sorterReservas.setRowFilter(RowFilter.regexFilter("(?i)" + texto, 0, 1));
+        }
+    }
+    
     private void agregarReserva() {
     Atraccion atr = getAtraccionSeleccionada();
     if (atr == null) {
