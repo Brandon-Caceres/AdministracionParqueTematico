@@ -7,3 +7,4 @@ codigo,nombre,descripcion,cantidadMax,horaApertura,horaCierre,edadMinima,alturaM
 7,Espectáculo de Magia Austral,Show en vivo con ilusiones y trucos sorprendentes. Funciones cada hora.,150,13:00,21:00,0,0,25
 8,Rueda Panorámica de los Andes,Disfruta de las mejores vistas del parque y sus alrededores desde las alturas.,32,10:00,23:00,0,0,12
 9,La Casona del Terror,Recorrido a oscuras con sustos y personajes de leyendas chilenas.,8,11:00,23:00,13,0,10
+10,Barco Pirata,Un viaje agitado por los mares,30,12:00,22:00,8,120,5

@@ -93,10 +93,13 @@ public class AdministracionParqueTematicoFX extends Application {
 
     // El método main ahora es muy simple
     public static void main(String[] args) {
-        // 1. CARGAR DATOS (se hace antes de lanzar la UI)
+        // 1. CARGAR DATOS
         PersistenciaParque.cargarDatos(parque, DIRECTORIO_DATOS);
-        
-        // 2. LANZAR LA APLICACIÓN JAVAFX
+    
+        // 2. ACTUALIZAR EL CONTADOR (ESTA ES LA LÍNEA QUE FALTA)
+        parque.actualizarContadorAtracciones();
+    
+        // 3. LANZAR LA APLICACIÓN JAVAFX
         launch(args);
     }
     

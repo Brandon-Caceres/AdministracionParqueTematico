@@ -259,12 +259,23 @@ public class GestionReservasDialogFX {
         grid.setPadding(new Insets(20, 150, 10, 10));
 
         DatePicker datePicker = new DatePicker();
-        ComboBox<LocalTime> horaComboBox = new ComboBox<>();
+        ComboBox<LocalTime> horaComboBox = new ComboBox<>(); 
         TextField cantidadPersonas = StyleManager.createStyledTextField();
         TextField nombreResponsable = StyleManager.createStyledTextField();
     
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
+        
+        final LocalDate fechaMinima = LocalDate.of(2025, 9, 27);
+    
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                // Deshabilita la celda si la fecha es anterior a la fecha mínima
+                setDisable(empty || date.isBefore(fechaMinima));
+            }
+        });
+        
         if (reservaExistente != null) { // Caso: Modificar Reserva
             grid.add(StyleManager.createNormalLabel("Fecha:"), 0, 0); grid.add(datePicker, 1, 0);
             grid.add(StyleManager.createNormalLabel("Hora:"), 0, 1); grid.add(horaComboBox, 1, 1);
