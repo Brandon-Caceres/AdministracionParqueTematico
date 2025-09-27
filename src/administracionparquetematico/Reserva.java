@@ -57,7 +57,19 @@ public class Reserva{
         this.grupo = new ArrayList<>(grupo);
     }
     
-    public void agregarPersona(Persona p) {
+    public void limpiarGrupo() {
+        this.grupo.clear();
+    }
+    
+    /**
+    * Agrega una persona, verificando que no se exceda el tamaño de la reserva.
+    * @param p La persona a agregar.
+    * @throws ReservaCompletaException si la reserva ya está llena.
+    */
+    public void agregarPersona(Persona p) throws ReservaCompletaException {
+        if (grupo.size() >= numeroPersonas) {
+            throw new ReservaCompletaException("La reserva ya está completa. No se pueden añadir más personas.");
+        }
         if (p == null) {
             throw new IllegalArgumentException("No se puede agregar una persona nula.");
         }

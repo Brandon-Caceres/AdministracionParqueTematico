@@ -31,10 +31,12 @@ public class GestionReservasDialog extends JDialog {
     private DefaultTableModel tableModel;
     private JTextField campoBusquedaReserva;
     private TableRowSorter<DefaultTableModel> sorterReservas;
+    private Frame ownerFrame;
 
     public GestionReservasDialog(Frame owner, Parque parque) {
         super(owner, "Gestión de Reservas", true);
         this.parque = parque;
+        this.ownerFrame = owner;
         setSize(800, 600);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
@@ -166,8 +168,14 @@ public class GestionReservasDialog extends JDialog {
             // El bloque que leía la fecha de los Spinners ha sido ELIMINADO por ser redundante e incorrecto.
 
             // 3. Pedir detalles de las personas
-            List<Persona> grupo = registrarPersonas(cantidadPersonas, nombreResponsable);
-            if (grupo == null) return; // El usuario canceló
+            RegistroPersonasDialog dialogoRegistro = new RegistroPersonasDialog(this.ownerFrame, cantidadPersonas, nombreResponsable);
+            dialogoRegistro.setVisible(true); // El programa se detiene aquí hasta que la ventana se cierre
+
+            List<Persona> grupo = dialogoRegistro.getGrupo(); // Obtenemos el resultado
+            if (grupo == null) {
+                System.out.println("Registro de personas cancelado por el usuario.");
+                return; // El usuario cerró o canceló la ventana de registro
+            }
 
             // 4. Validar restricciones (con nombres de métodos corregidos)
             for (Persona p : grupo) {
@@ -246,44 +254,26 @@ public class GestionReservasDialog extends JDialog {
     }
     
     private void gestionarPersonas() {
+        // 1. Obtener la atracción y la reserva seleccionadas
         Atraccion atr = getAtraccionSeleccionada();
         int selectedRow = table.getSelectedRow();
+
         if (atr == null || selectedRow < 0) {
             JOptionPane.showMessageDialog(this, "Selecciona una atracción y una reserva de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int codigoReserva = (int) tableModel.getValueAt(selectedRow, 0);
-        Reserva reservaSeleccionada = atr.buscarReserva(codigoReserva);
-        
-        if (reservaSeleccionada != null) {
-            try {
-                if (reservaSeleccionada.getGrupo().size() >= reservaSeleccionada.getNumeroPersonas()) {
-                    throw new IllegalStateException("Ya se han registrado todas las personas para esta reserva.");
-                }
 
-                JTextField nombreField = new JTextField();
-                JTextField edadField = new JTextField();
-                JTextField alturaField = new JTextField();
-                JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
-                panel.add(new JLabel("Nombre Acompañante:"));
-                panel.add(nombreField);
-                panel.add(new JLabel("Edad Acompañante:"));
-                panel.add(edadField);
-                panel.add(new JLabel("Altura Acompañante (cm):"));
-                panel.add(alturaField);
-                
-                int result = JOptionPane.showConfirmDialog(this, panel, "Agregar Persona a Reserva " + codigoReserva, JOptionPane.OK_CANCEL_OPTION);
-                if (result == JOptionPane.OK_OPTION) {
-                    String nombre = nombreField.getText();
-                    if (nombre.trim().isEmpty()) { throw new IllegalArgumentException("El nombre no puede estar vacío."); }
-                    int edad = Integer.parseInt(edadField.getText());
-                    int altura = Integer.parseInt(alturaField.getText());
-                    reservaSeleccionada.agregarPersona(new Persona(nombre, edad, altura));
-                    actualizarTablaReservas();
-                }
-            } catch (Exception ex) {
-                mostrarError(ex);
-            }
+        int codigoReserva = (int) table.getValueAt(selectedRow, 0);
+        Reserva reservaSeleccionada = atr.buscarReserva(codigoReserva);
+    
+        // 2. Si la reserva existe, abrir la nueva ventana de edición
+        if (reservaSeleccionada != null) {
+            // Se crea y muestra la ventana de diálogo, pasándole la reserva a editar
+            RegistroPersonasDialog dialogoEdicion = new RegistroPersonasDialog(this.ownerFrame, reservaSeleccionada);
+            dialogoEdicion.setVisible(true);
+
+            // 3. Al cerrar la ventana, se actualiza la tabla para reflejar los cambios
+            actualizarTablaReservas();
         }
     }
 
@@ -331,50 +321,6 @@ public class GestionReservasDialog extends JDialog {
         return horarios;
     }
 
-    private List<Persona> registrarPersonas(int cantidadPersonas, String nombreResponsable) throws NumberFormatException {
-        // Usamos un JScrollPane para que el formulario no sea demasiado grande si hay muchas personas
-        JPanel panelPersonas = new JPanel(new GridLayout(0, 4, 5, 5)); // 4 columnas: Label, Txt, Label, Txt
-        List<JTextField> camposEdad = new ArrayList<>();
-        List<JTextField> camposAltura = new ArrayList<>();
-
-        for (int i = 1; i <= cantidadPersonas; i++) {
-            String etiquetaNombre = (i == 1) ? nombreResponsable + " (Responsable):" : "Acompañante " + i + ":";
-            
-            panelPersonas.add(new JLabel(etiquetaNombre));
-            panelPersonas.add(new JLabel("")); // Espacio vacío para alinear
-            
-            JTextField campoEdad = new JTextField();
-            camposEdad.add(campoEdad);
-            panelPersonas.add(new JLabel("Edad:"));
-            panelPersonas.add(campoEdad);
-
-            JTextField campoAltura = new JTextField();
-            camposAltura.add(campoAltura);
-            panelPersonas.add(new JLabel("Altura (cm):"));
-            panelPersonas.add(campoAltura);
-        }
-
-        JScrollPane scrollPane = new JScrollPane(panelPersonas);
-        scrollPane.setPreferredSize(new Dimension(450, 300));
-
-        int result = JOptionPane.showConfirmDialog(this, scrollPane, "Registrar Personas del Grupo", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-        if (result == JOptionPane.OK_OPTION) {
-            List<Persona> grupo = new ArrayList<>();
-            for (int i = 0; i < camposEdad.size(); i++) {
-                int edad = Integer.parseInt(camposEdad.get(i).getText());
-                int altura = Integer.parseInt(camposAltura.get(i).getText());
-                
-                if (edad <= 0 || altura <= 0) throw new IllegalArgumentException("La edad y la altura deben ser números positivos.");
-                
-                String nombre = (i == 0) ? nombreResponsable : "Acompañante " + (i + 1);
-                grupo.add(new Persona(nombre, edad, altura));
-            }
-            return grupo;
-        }
-        return null; // El usuario presionó Cancelar
-    }
-
     private void actualizarComboBox() {
         atraccionesComboBox.removeAllItems();
         if (parque.getAtraccionesCollection() != null) {
@@ -409,16 +355,29 @@ public class GestionReservasDialog extends JDialog {
 
     private void mostrarError(Exception ex) {
         String message;
+        String title = "Error"; // Título por defecto
+
         if (ex instanceof NumberFormatException) {
-            message = "La cantidad y la edad deben ser números válidos.";
+            message = "La cantidad, edad y altura deben ser números válidos.";
         } else if (ex instanceof DateTimeParseException) {
             message = "El formato de hora debe ser HH:MM (ej. 14:30).";
-        } else if (ex instanceof IllegalArgumentException || ex instanceof IllegalStateException) {
+        } 
+        // --- NUEVOS BLOQUES PARA MANEJAR LAS EXCEPCIONES PERSONALIZADAS ---
+        else if (ex instanceof CapacidadExcedidaException) {
+            title = "Capacidad Excedida";
+            message = ex.getMessage();
+        } else if (ex instanceof RestriccionIncumplidaException) {
+            title = "Restricción Incumplida";
+            message = ex.getMessage();
+        } 
+        // --- FIN DE LOS NUEVOS BLOQUES ---
+        else if (ex instanceof IllegalArgumentException || ex instanceof IllegalStateException) {
             message = ex.getMessage();
         } else {
-            message = "Ocurrió un error inesperado.";
+            title = "Error Inesperado";
+            message = "Ocurrió un error inesperado: " + ex.getClass().getSimpleName();
         }
-        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, message, title, JOptionPane.ERROR_MESSAGE);
     }
 
     // Clase interna para mostrar el objeto Atraccion correctamente en el JComboBox
