@@ -8,6 +8,10 @@ package administracionparquetematico;
  *
  * @author Brandon
  */
+import com.toedter.calendar.JDateChooser;
+import java.util.Calendar;
+import java.util.Date;
+import java.time.ZoneId;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -79,75 +83,74 @@ public class GestionReservasDialog extends JDialog {
     }
 
     private void agregarReserva() {
-        Atraccion atr = getAtraccionSeleccionada();
-        if (atr == null) {
-            JOptionPane.showMessageDialog(this, "Debes seleccionar una atracción primero.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        // 1. Mostrar el primer formulario, que ahora tiene un JComboBox para la hora
-        JPanel panelPrincipal = crearPanelFormularioPrincipal(atr);
-        int resultPrincipal = JOptionPane.showConfirmDialog(this, panelPrincipal, "Nueva Reserva para: " + atr.getNombre(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-        
-        if (resultPrincipal == JOptionPane.OK_OPTION) {
-            try {
-                // Obtener la hora seleccionada del JComboBox
-                LocalTime horaSeleccionada = (LocalTime) ((JComboBox<?>) panelPrincipal.getComponent(7)).getSelectedItem();
-                if (horaSeleccionada == null) {
-                    throw new IllegalArgumentException("Debe seleccionar un horario válido. Es posible que la atracción no tenga horarios disponibles.");
-                }
-
-                int cantidadPersonas = Integer.parseInt(((JTextField) panelPrincipal.getComponent(9)).getText());
-                if (cantidadPersonas <= 0) {
-                    throw new IllegalArgumentException("La cantidad de personas debe ser mayor a cero.");
-                }
-
-                // Chequeo de capacidad anticipado
-                int capacidadOcupada = atr.getCapacidadOcupadaEn(horaSeleccionada);
-                if ((capacidadOcupada + cantidadPersonas) > atr.getCantidadMax()) {
-                    throw new IllegalArgumentException("Capacidad excedida. Solo quedan " + (atr.getCantidadMax() - capacidadOcupada) + " cupos para esa hora.");
-                }
-                
-                // Obtener y validar el resto de los datos
-                int anio = (Integer) ((JSpinner) panelPrincipal.getComponent(1)).getValue();
-                int mes = (Integer) ((JSpinner) panelPrincipal.getComponent(3)).getValue();
-                int dia = (Integer) ((JSpinner) panelPrincipal.getComponent(5)).getValue();
-                String fecha;
-                try {
-                    LocalDate.of(anio, mes, dia);
-                    fecha = String.format("%02d/%02d/%d", dia, mes, anio);
-                } catch (DateTimeException e) {
-                    throw new IllegalArgumentException("La fecha " + dia + "/" + mes + "/" + anio + " no es válida.");
-                }
-
-                String nombreResponsable = ((JTextField) panelPrincipal.getComponent(11)).getText();
-                if (nombreResponsable.trim().isEmpty()) {
-                    throw new IllegalArgumentException("El nombre del responsable no puede estar vacío.");
-                }
-
-                // Pedir detalles de las personas
-                List<Persona> grupo = registrarPersonas(cantidadPersonas, nombreResponsable);
-                if (grupo == null) return; // El usuario canceló
-
-                // Validar restricciones de edad/altura
-                for (Persona p : grupo) {
-                    if (atr.getEdad() > 0 && p.getEdad() < atr.getEdad()) {
-                        throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la edad mínima.");
-                    }
-                    if (atr.getAltura() > 0 && p.getAltura() < atr.getAltura()) {
-                        throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la altura mínima.");
-                    }
-                }
-
-                // Crear la reserva
-                atr.crearNuevaReserva(fecha, horaSeleccionada, grupo);
-                actualizarTablaReservas();
-
-            } catch (Exception ex) {
-                 mostrarError(ex);
+    Atraccion atr = getAtraccionSeleccionada();
+    if (atr == null) {
+        JOptionPane.showMessageDialog(this, "Debes seleccionar una atracción primero.", "Aviso", JOptionPane.WARNING_MESSAGE);
+        return;
+    }
+    
+    JPanel panelPrincipal = crearPanelFormularioPrincipal(atr);
+    panelPrincipal.setPreferredSize(new Dimension(480, 200)); 
+    int resultPrincipal = JOptionPane.showConfirmDialog(this, panelPrincipal, "Nueva Reserva para: " + atr.getNombre(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+    
+    if (resultPrincipal == JOptionPane.OK_OPTION) {
+        try {
+            // 1. OBTENER FECHA (Forma correcta, desde JDateChooser)
+            JDateChooser dateChooser = (JDateChooser) panelPrincipal.getComponent(1);
+            Date fechaSeleccionada = dateChooser.getDate();
+            if (fechaSeleccionada == null) {
+                throw new IllegalArgumentException("Debe seleccionar una fecha.");
             }
+            LocalDate localDate = fechaSeleccionada.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            String fecha = String.format("%02d/%02d/%d", localDate.getDayOfMonth(), localDate.getMonthValue(), localDate.getYear());
+            
+            // 2. OBTENER HORA, CANTIDAD Y NOMBRE (con índices corregidos)
+            LocalTime horaSeleccionada = (LocalTime) ((JComboBox<?>) panelPrincipal.getComponent(3)).getSelectedItem(); // <-- ÍNDICE CORREGIDO (era 7)
+            if (horaSeleccionada == null) {
+                throw new IllegalArgumentException("Debe seleccionar un horario válido.");
+            }
+
+            int cantidadPersonas = Integer.parseInt(((JTextField) panelPrincipal.getComponent(5)).getText()); // <-- ÍNDICE CORREGIDO (era 9)
+            if (cantidadPersonas <= 0) {
+                throw new IllegalArgumentException("La cantidad de personas debe ser mayor a cero.");
+            }
+
+            // Chequeo de capacidad anticipado
+            int capacidadOcupada = atr.getCapacidadOcupadaEn(horaSeleccionada);
+            if ((capacidadOcupada + cantidadPersonas) > atr.getCantidadMax()) {
+                throw new IllegalArgumentException("Capacidad excedida. Solo quedan " + (atr.getCantidadMax() - capacidadOcupada) + " cupos para esa hora.");
+            }
+            
+            String nombreResponsable = ((JTextField) panelPrincipal.getComponent(7)).getText(); // <-- ÍNDICE CORREGIDO (era 11)
+            if (nombreResponsable.trim().isEmpty()) {
+                throw new IllegalArgumentException("El nombre del responsable no puede estar vacío.");
+            }
+
+            // El bloque que leía la fecha de los Spinners ha sido ELIMINADO por ser redundante e incorrecto.
+
+            // 3. Pedir detalles de las personas
+            List<Persona> grupo = registrarPersonas(cantidadPersonas, nombreResponsable);
+            if (grupo == null) return; // El usuario canceló
+
+            // 4. Validar restricciones (con nombres de métodos corregidos)
+            for (Persona p : grupo) {
+                if (atr.getEdad() > 0 && p.getEdad() < atr.getEdad()) { // <-- NOMBRES CORREGIDOS
+                    throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la edad mínima de " + atr.getEdad() + " años.");
+                }
+                if (atr.getAltura() > 0 && p.getAltura() < atr.getAltura()) { // <-- NOMBRES CORREGIDOS
+                    throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la altura mínima de " + atr.getAltura() + " cm.");
+                }
+            }
+
+            // 5. Crear la reserva
+            atr.crearNuevaReserva(fecha, horaSeleccionada, grupo);
+            actualizarTablaReservas();
+
+        } catch (Exception ex) {
+            mostrarError(ex);
         }
     }
+}
     
     private void modificarReserva() {
         Atraccion atr = getAtraccionSeleccionada();
@@ -250,22 +253,15 @@ public class GestionReservasDialog extends JDialog {
     private JPanel crearPanelFormularioPrincipal(Atraccion atr) {
         JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
         
-        SpinnerNumberModel anioModel = new SpinnerNumberModel(2025, 2025, 2100, 1);
-        JSpinner spinnerAnio = new JSpinner(anioModel);
-        spinnerAnio.setEditor(new JSpinner.NumberEditor(spinnerAnio, "#"));
-        
-        SpinnerNumberModel mesModel = new SpinnerNumberModel(1, 1, 12, 1);
-        JSpinner spinnerMes = new JSpinner(mesModel);
-        
-        SpinnerNumberModel diaModel = new SpinnerNumberModel(1, 1, 31, 1);
-        JSpinner spinnerDia = new JSpinner(diaModel);
+        panel.add(new JLabel("Fecha de la Reserva:"));
+        JDateChooser dateChooser = new JDateChooser();
+        dateChooser.setDate(new Date());
 
-        panel.add(new JLabel("Año:"));
-        panel.add(spinnerAnio);
-        panel.add(new JLabel("Mes:"));
-        panel.add(spinnerMes);
-        panel.add(new JLabel("Día:"));
-        panel.add(spinnerDia);
+        Calendar cal = Calendar.getInstance();
+        cal.set(2025, Calendar.SEPTEMBER, 27);
+        dateChooser.setMinSelectableDate(cal.getTime());
+        
+        panel.add(dateChooser);
         
         // JComboBox para la hora
         panel.add(new JLabel("Horarios Disponibles:"));

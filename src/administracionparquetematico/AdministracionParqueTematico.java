@@ -22,11 +22,11 @@ public class AdministracionParqueTematico {
         PersistenciaParque.cargarDatos(parque, DIRECTORIO_DATOS);
 
         // Intenta aplicar un estilo visual nativo del sistema operativo
-        try {
+        /*try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
         
         //--- Crear la Ventana Principal ---
         JFrame frame = new JFrame("Administración del Parque Temático");
