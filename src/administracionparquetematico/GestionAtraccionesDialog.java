@@ -67,7 +67,9 @@ public class GestionAtraccionesDialog extends JDialog {
                     a.getDescripcion(),
                     a.getCantidadMax(), // <-- Aquí se muestra la capacidad en la tabla
                     a.getApertura(),
-                    a.getCierre()
+                    a.getCierre(),
+                    a.getEdad(),
+                    a.getAltura()
                 };
                 tableModel.addRow(row);
             }
@@ -75,7 +77,7 @@ public class GestionAtraccionesDialog extends JDialog {
     }
 
     private void agregarAtraccion() {
-        JPanel panel = crearPanelFormularioAtraccion(null, "", "", "", "09:00", "21:00");
+        JPanel panel = crearPanelFormularioAtraccion(null, "", "", "", "09:00", "21:00", "", "", "");
         
         int result = JOptionPane.showConfirmDialog(this, panel, "Agregar Nueva Atracción",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
@@ -88,8 +90,11 @@ public class GestionAtraccionesDialog extends JDialog {
                 int capacidad = Integer.parseInt(((JTextField) panel.getComponent(5)).getText());
                 String apertura = ((JTextField) panel.getComponent(7)).getText();
                 String cierre = ((JTextField) panel.getComponent(9)).getText();
+                int edadMin = Integer.parseInt(((JTextField) panel.getComponent(11)).getText());
+                int alturaMin = Integer.parseInt(((JTextField) panel.getComponent(13)).getText());
+                int duracion = Integer.parseInt(((JTextField) panel.getComponent(15)).getText());
 
-                parque.agregarAtraccion(nombre, descripcion, capacidad, apertura, cierre);
+                parque.agregarAtraccion(nombre, descripcion, capacidad, apertura, cierre, edadMin, alturaMin, duracion);
                 actualizarTabla();
             } catch (Exception ex) {
                 mostrarError(ex);
@@ -118,7 +123,10 @@ public class GestionAtraccionesDialog extends JDialog {
             // Se pasa la capacidad actual al formulario
             String.valueOf(atraccionAModificar.getCantidadMax()),
             atraccionAModificar.getApertura().toString(),
-            atraccionAModificar.getCierre().toString()
+            atraccionAModificar.getCierre().toString(),
+            String.valueOf(atraccionAModificar.getEdad()),
+            String.valueOf(atraccionAModificar.getAltura()),
+            String.valueOf(atraccionAModificar.getDuracion())
         );
 
         int result = JOptionPane.showConfirmDialog(this, panel, "Modificar Atracción",
@@ -132,6 +140,8 @@ public class GestionAtraccionesDialog extends JDialog {
                 atraccionAModificar.setCantidadMax(Integer.parseInt(((JTextField) panel.getComponent(7)).getText()));
                 atraccionAModificar.setApertura(((JTextField) panel.getComponent(9)).getText());
                 atraccionAModificar.setCierre(((JTextField) panel.getComponent(11)).getText());
+                atraccionAModificar.setEdad(Integer.parseInt(((JTextField) panel.getComponent(13)).getText()));
+            atraccionAModificar.setAltura(Integer.parseInt(((JTextField) panel.getComponent(15)).getText()));
                 actualizarTabla();
             } catch (Exception ex) {
                 mostrarError(ex);
@@ -157,7 +167,8 @@ public class GestionAtraccionesDialog extends JDialog {
     }
     
     // Este método crea el formulario y ya incluye el campo "Capacidad Máxima"
-    private JPanel crearPanelFormularioAtraccion(String codigo, String nombre, String desc, String cap, String ap, String ci) {
+    private JPanel crearPanelFormularioAtraccion(String codigo, String nombre, 
+            String desc, String cap, String ap, String ci, String edadMin, String altMin, String duracion) {
         JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
         
         if (codigo != null) {
@@ -181,6 +192,14 @@ public class GestionAtraccionesDialog extends JDialog {
         panel.add(new JTextField(ap));
         panel.add(new JLabel("Hora Cierre (HH:MM):"));
         panel.add(new JTextField(ci));
+        
+        panel.add(new JLabel("Edad Mínima (0 si no aplica):"));
+        panel.add(new JTextField(edadMin));
+        panel.add(new JLabel("Altura Mínima en cm (0 si no aplica):"));
+        panel.add(new JTextField(altMin));
+        
+        panel.add(new JLabel("Duración en minutos:"));
+        panel.add(new JTextField(duracion));
         
         return panel;
     }

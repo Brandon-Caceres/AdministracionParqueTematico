@@ -13,15 +13,13 @@ public class Persona{
     //Atributos
     private String nombre;
     private int edad;
-    //private int altura;
-    //private int peso;
+    private int altura;
     
     //Constructor
-    public Persona(String nombre, int edad /*, int altura, int peso*/){
+    public Persona(String nombre, int edad , int altura){
         this.nombre = nombre;
         this.edad = edad;
-        /*this.altura = altura;
-        this.peso = peso;*/
+        this.altura = altura;
     }
     
     //Metodos
@@ -31,15 +29,12 @@ public class Persona{
     public int getEdad() { return edad; }
     public void setEdad(int edad) { this.edad = edad; }
 
-    /*public int getAltura() { return altura; }
+    public int getAltura() { return altura; }
     public void setAltura(int altura) { this.altura = altura; }
-
-    public int getPeso() { return peso; }
-    public void setPeso(int peso) { this.peso = peso; }*/
     
     @Override
     public String toString() {
-        return "Nombre: " + nombre + ", Edad: " + edad /*+ ", Altura: " + altura + ", Peso: " + peso*/;
+        return "Nombre: " + nombre + ", Edad: " + edad + ", Altura: " + altura;
     }
     
     public void informacionPersona(){

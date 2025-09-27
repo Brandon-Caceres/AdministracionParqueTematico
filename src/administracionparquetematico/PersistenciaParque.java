@@ -10,6 +10,7 @@ package administracionparquetematico;
  */
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -40,7 +41,8 @@ public class PersistenciaParque {
 
     private static void guardarAtracciones(Parque parque, String rutaArchivo) {
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(rutaArchivo), StandardCharsets.UTF_8))) {
-            writer.println("codigo,nombre,descripcion,cantidadMax,horaApertura,horaCierre");
+            // Añadir nuevas columnas al encabezado
+            writer.println("codigo,nombre,descripcion,cantidadMax,horaApertura,horaCierre,edadMinima,alturaMinimaCm");
             for (Atraccion atr : parque.getAtraccionesCollection()) {
                 StringJoiner sj = new StringJoiner(SEPARADOR);
                 sj.add(String.valueOf(atr.getCodigo()));
@@ -49,6 +51,9 @@ public class PersistenciaParque {
                 sj.add(String.valueOf(atr.getCantidadMax()));
                 sj.add(atr.getApertura().toString());
                 sj.add(atr.getCierre().toString());
+                sj.add(String.valueOf(atr.getEdad()));
+                sj.add(String.valueOf(atr.getAltura()));
+                sj.add(String.valueOf(atr.getDuracion())); 
                 writer.println(sj.toString());
             }
         } catch (IOException e) {
@@ -61,7 +66,7 @@ public class PersistenciaParque {
              PrintWriter writerP = new PrintWriter(new OutputStreamWriter(new FileOutputStream(rutaPersonas), StandardCharsets.UTF_8))) {
 
             writerR.println("codigoAtraccion,codigoReserva,fecha,hora,numeroPersonas");
-            writerP.println("codigoAtraccion,codigoReserva,nombre,edad");
+            writerP.println("codigoAtraccion,codigoReserva,nombre,edad,alturaCm");
 
             for (Atraccion atr : parque.getAtraccionesCollection()) {
                 for (Reserva res : atr.getReservas()) {
@@ -79,6 +84,7 @@ public class PersistenciaParque {
                         sjP.add(String.valueOf(res.getCodigoR()));
                         sjP.add(escaparCampo(per.getNombre()));
                         sjP.add(String.valueOf(per.getEdad()));
+                        sjP.add(String.valueOf(per.getAltura()));
                         writerP.println(sjP.toString());
                     }
                 }
@@ -99,6 +105,11 @@ public class PersistenciaParque {
             cargarAtracciones(parque, directorio + "/atracciones.csv");
             cargarReservas(parque, directorio + "/reservas.csv");
             cargarPersonas(parque, directorio + "/personas.csv");
+            
+            for (Atraccion atr : parque.getAtraccionesCollection()) {
+                atr.inicializarContadorReservas();
+            }
+            System.out.println("Datos cargados y contadores inicializados correctamente.");
         } catch (Exception e) {
             System.err.println("No se pudo cargar la información, iniciando con datos vacíos: " + e.getMessage());
             // e.printStackTrace(); // Descomentar para ver el detalle completo del error
@@ -115,13 +126,17 @@ public class PersistenciaParque {
             while ((linea = br.readLine()) != null) {
                 if (linea.trim().isEmpty()) continue;
                 String[] campos = parsearLineaCSV(linea);
+                // Actualizar el constructor para leer los nuevos campos
                 Atraccion atr = new Atraccion(
                         Integer.parseInt(campos[0]),
                         campos[1],
                         campos[2],
                         Integer.parseInt(campos[3]),
                         campos[4],
-                        campos[5]
+                        campos[5],
+                        Integer.parseInt(campos[6]),
+                        Integer.parseInt(campos[7]),
+                        Integer.parseInt(campos[8])
                 );
                 parque.agregarAtraccion(atr);
             }
@@ -141,11 +156,12 @@ public class PersistenciaParque {
                 int codAtraccion = Integer.parseInt(campos[0]);
                 Atraccion atr = parque.buscarAtraccion(codAtraccion);
                 if (atr != null) {
+                    LocalTime hora = LocalTime.parse(campos[3]);
                     Reserva res = new Reserva(
                             Integer.parseInt(campos[1]),
                             atr.getNombre(),
                             campos[2],
-                            campos[3],
+                            hora,
                             Integer.parseInt(campos[4])
                     );
                     atr.agregarReserva(res);
@@ -170,7 +186,7 @@ public class PersistenciaParque {
                 if (atr != null) {
                     Reserva res = atr.buscarReserva(codReserva);
                     if (res != null) {
-                        Persona per = new Persona(campos[2], Integer.parseInt(campos[3]));
+                        Persona per = new Persona(campos[2], Integer.parseInt(campos[3]), Integer.parseInt(campos[4]));
                         res.agregarPersona(per);
                     }
                 }

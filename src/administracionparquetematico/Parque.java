@@ -36,10 +36,10 @@ public class Parque{
         this.atracciones = new HashMap<>(atracciones);
     }
     
-    public void agregarAtraccion(String nombre, String descripcion, int capacidad, String apertura, String cierre) {
+    public void agregarAtraccion(String nombre, String descripcion, int capacidad, String apertura, String cierre, int edadMin, int alturaMin, int duracion) {
         int nuevoCodigo = contadorCodigosAtraccion++;
         
-        Atraccion nuevaAtraccion = new Atraccion(nuevoCodigo, nombre, descripcion, capacidad, apertura, cierre);
+        Atraccion nuevaAtraccion = new Atraccion(nuevoCodigo, nombre, descripcion, capacidad, apertura, cierre, edadMin, alturaMin, duracion);
         atracciones.put(nuevoCodigo, nuevaAtraccion);
     }
     

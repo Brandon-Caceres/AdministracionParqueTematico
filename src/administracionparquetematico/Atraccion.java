@@ -19,17 +19,24 @@ public class Atraccion{
     private int cantidadMax;
     LocalTime horaApertura;
     LocalTime horaCierre;
-    private List<Reserva> reservas;
+    private int edadMin;
+    private int alturaMinCm;
+    private int duracion;
     private int contadorCodigosReserva = 1;
+    private List<Reserva> reservas;
     
     //Constructor
-    public Atraccion(int codigo, String nombre, String descripcion, int cantidadMax, String apertura, String cierre) {
+    public Atraccion(int codigo, String nombre, String descripcion, 
+            int cantidadMax, String apertura, String cierre, int edadMin, int alturaMinCm, int duracion) {
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.cantidadMax = cantidadMax;
         this.horaApertura = LocalTime.parse(apertura);
         this.horaCierre = LocalTime.parse(cierre);
+        this.edadMin = edadMin;
+        this.alturaMinCm = alturaMinCm;
+        this.duracion = duracion;
         this.reservas = new ArrayList<>();
     }
     
@@ -52,6 +59,15 @@ public class Atraccion{
     public LocalTime getCierre(){return horaCierre;}
     public void setCierre(String nueva){this.horaCierre = LocalTime.parse(nueva);}
     
+    public int getEdad() { return edadMin; }
+    public void setEdad(int edadMin) { this.edadMin = edadMin; }
+    
+    public int getAltura() { return alturaMinCm; }
+    public void setAltura(int alturaMinCm) { this.alturaMinCm = alturaMinCm; }
+    
+    public int getDuracion() { return duracion; }
+    public void setDuracion(int duracion) { this.duracion = duracion; }
+    
     public List<Reserva> getReservas() {
         return Collections.unmodifiableList(reservas);
     }
@@ -59,16 +75,33 @@ public class Atraccion{
         this.reservas = new ArrayList<>(reservas);
     }
     
-    public Reserva crearNuevaReserva(String fecha, String hora, List<Persona> grupoInicial) {
-        LocalTime horaReserva = LocalTime.parse(hora);
+    public void inicializarContadorReservas() {
+        if (reservas.isEmpty()) {
+            this.contadorCodigosReserva = 1;
+        } else {
+            // Busca el código máximo en la lista de reservas
+            int maxCodigo = 0;
+            for (Reserva r : reservas) {
+                if (r.getCodigoR() > maxCodigo) {
+                    maxCodigo = r.getCodigoR();
+                }
+            }
+            this.contadorCodigosReserva = maxCodigo + 1;
+        }
+    }
+    
+    public Reserva crearNuevaReserva(String fecha, LocalTime  hora, List<Persona> grupoInicial) {
+        // 1. VALIDAR QUE LA HORA SEA UN HORARIO VÁLIDO (ej. 10:00, 10:15, pero no 10:05)
+        if (duracion > 0 && hora.getMinute() % this.duracion != 0) {
+            throw new IllegalArgumentException("La hora de la reserva (" + hora + ") no es un horario válido para esta atracción.");
+        }
+        // 2. VERIFICAR CAPACIDAD
         int numeroDePersonas = grupoInicial.size();
-
-        // 1. VERIFICAR CAPACIDAD DISPONIBLE
-        int capacidadOcupada = getCapacidadOcupadaEn(horaReserva);
+        int capacidadOcupada = getCapacidadOcupadaEn(hora);
         if ((capacidadOcupada + numeroDePersonas) > this.cantidadMax) {
             throw new IllegalArgumentException("Capacidad excedida. Solo quedan " + (this.cantidadMax - capacidadOcupada) + " cupos para esa hora.");
         }
-        // 2. Si hay capacidad, se crea la reserva
+        // 3. Si hay capacidad, se crea la reserva
         int nuevoCodigoReserva = contadorCodigosReserva++;
         Reserva nuevaReserva = new Reserva(nuevoCodigoReserva, this.nombre, fecha, hora, numeroDePersonas);
         // Se agrega el grupo completo a la reserva

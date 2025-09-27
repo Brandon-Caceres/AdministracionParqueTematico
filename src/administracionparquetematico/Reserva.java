@@ -21,11 +21,11 @@ public class Reserva{
     private int numeroPersonas;
     
     //Constructor
-    public Reserva(int codigoR, String atraccion ,String fecha, String horaActual, int numeroPersonas){
+    public Reserva(int codigoR, String atraccion ,String fecha, LocalTime horaActual, int numeroPersonas){
         this.codigoR = codigoR;
         this.atraccion = atraccion;
         this.fecha = fecha;
-        this.hora = LocalTime.parse(horaActual);
+        this.hora = horaActual;
         this.numeroPersonas = numeroPersonas;
         this.grupo = new ArrayList<>();
     }
@@ -71,11 +71,11 @@ public class Reserva{
         grupo.addAll(personas);
     }
     
-    public void agregarPersona(String nombre, int edad/*, int altura, int peso*/) {
+    public void agregarPersona(String nombre, int edad, int altura) {
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre no puede ser nulo o vacío.");
         }
-        grupo.add(new Persona(nombre, edad/*, altura, peso*/)); 
+        grupo.add(new Persona(nombre, edad, altura)); 
     }
     
     public void eliminarPersona(String nombre) {

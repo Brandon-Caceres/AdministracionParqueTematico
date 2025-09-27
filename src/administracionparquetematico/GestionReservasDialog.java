@@ -85,43 +85,62 @@ public class GestionReservasDialog extends JDialog {
             return;
         }
 
-        // 1. Mostrar el primer formulario para los datos generales
-        JPanel panelPrincipal = crearPanelFormularioPrincipal();
+        // 1. Mostrar el primer formulario, que ahora tiene un JComboBox para la hora
+        JPanel panelPrincipal = crearPanelFormularioPrincipal(atr);
         int resultPrincipal = JOptionPane.showConfirmDialog(this, panelPrincipal, "Nueva Reserva para: " + atr.getNombre(), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
         
         if (resultPrincipal == JOptionPane.OK_OPTION) {
             try {
-                // 2. Validar la fecha
+                // Obtener la hora seleccionada del JComboBox
+                LocalTime horaSeleccionada = (LocalTime) ((JComboBox<?>) panelPrincipal.getComponent(7)).getSelectedItem();
+                if (horaSeleccionada == null) {
+                    throw new IllegalArgumentException("Debe seleccionar un horario válido. Es posible que la atracción no tenga horarios disponibles.");
+                }
+
+                int cantidadPersonas = Integer.parseInt(((JTextField) panelPrincipal.getComponent(9)).getText());
+                if (cantidadPersonas <= 0) {
+                    throw new IllegalArgumentException("La cantidad de personas debe ser mayor a cero.");
+                }
+
+                // Chequeo de capacidad anticipado
+                int capacidadOcupada = atr.getCapacidadOcupadaEn(horaSeleccionada);
+                if ((capacidadOcupada + cantidadPersonas) > atr.getCantidadMax()) {
+                    throw new IllegalArgumentException("Capacidad excedida. Solo quedan " + (atr.getCantidadMax() - capacidadOcupada) + " cupos para esa hora.");
+                }
+                
+                // Obtener y validar el resto de los datos
                 int anio = (Integer) ((JSpinner) panelPrincipal.getComponent(1)).getValue();
                 int mes = (Integer) ((JSpinner) panelPrincipal.getComponent(3)).getValue();
                 int dia = (Integer) ((JSpinner) panelPrincipal.getComponent(5)).getValue();
                 String fecha;
                 try {
-                    LocalDate.of(anio, mes, dia); // Intenta crear la fecha para validarla
+                    LocalDate.of(anio, mes, dia);
                     fecha = String.format("%02d/%02d/%d", dia, mes, anio);
                 } catch (DateTimeException e) {
                     throw new IllegalArgumentException("La fecha " + dia + "/" + mes + "/" + anio + " no es válida.");
                 }
 
-                // Obtener el resto de los datos
-                String horaStr = ((JTextField) panelPrincipal.getComponent(7)).getText();
-                int cantidadPersonas = Integer.parseInt(((JTextField) panelPrincipal.getComponent(9)).getText());
                 String nombreResponsable = ((JTextField) panelPrincipal.getComponent(11)).getText();
-
-                // Validaciones adicionales
-                if (cantidadPersonas <= 0) throw new IllegalArgumentException("La cantidad de personas debe ser mayor a cero.");
-                if (nombreResponsable.trim().isEmpty()) throw new IllegalArgumentException("El nombre del responsable no puede estar vacío.");
-                if (!atr.estaAbierta(LocalTime.parse(horaStr))) {
-                    JOptionPane.showMessageDialog(this, "La atracción está cerrada a esa hora.", "Error de Horario", JOptionPane.ERROR_MESSAGE);
-                    return;
+                if (nombreResponsable.trim().isEmpty()) {
+                    throw new IllegalArgumentException("El nombre del responsable no puede estar vacío.");
                 }
 
-                // 3. Mostrar el segundo formulario para las edades
-                List<Persona> grupo = registrarEdades(cantidadPersonas, nombreResponsable);
+                // Pedir detalles de las personas
+                List<Persona> grupo = registrarPersonas(cantidadPersonas, nombreResponsable);
                 if (grupo == null) return; // El usuario canceló
 
-                // 4. Crear la reserva
-                atr.crearNuevaReserva(fecha, horaStr, grupo);
+                // Validar restricciones de edad/altura
+                for (Persona p : grupo) {
+                    if (atr.getEdad() > 0 && p.getEdad() < atr.getEdad()) {
+                        throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la edad mínima.");
+                    }
+                    if (atr.getAltura() > 0 && p.getAltura() < atr.getAltura()) {
+                        throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la altura mínima.");
+                    }
+                }
+
+                // Crear la reserva
+                atr.crearNuevaReserva(fecha, horaSeleccionada, grupo);
                 actualizarTablaReservas();
 
             } catch (Exception ex) {
@@ -204,18 +223,22 @@ public class GestionReservasDialog extends JDialog {
 
                 JTextField nombreField = new JTextField();
                 JTextField edadField = new JTextField();
+                JTextField alturaField = new JTextField();
                 JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
                 panel.add(new JLabel("Nombre Acompañante:"));
                 panel.add(nombreField);
                 panel.add(new JLabel("Edad Acompañante:"));
                 panel.add(edadField);
+                panel.add(new JLabel("Altura Acompañante (cm):"));
+                panel.add(alturaField);
                 
                 int result = JOptionPane.showConfirmDialog(this, panel, "Agregar Persona a Reserva " + codigoReserva, JOptionPane.OK_CANCEL_OPTION);
                 if (result == JOptionPane.OK_OPTION) {
                     String nombre = nombreField.getText();
                     if (nombre.trim().isEmpty()) { throw new IllegalArgumentException("El nombre no puede estar vacío."); }
                     int edad = Integer.parseInt(edadField.getText());
-                    reservaSeleccionada.agregarPersona(new Persona(nombre, edad));
+                    int altura = Integer.parseInt(alturaField.getText());
+                    reservaSeleccionada.agregarPersona(new Persona(nombre, edad, altura));
                     actualizarTablaReservas();
                 }
             } catch (Exception ex) {
@@ -224,7 +247,7 @@ public class GestionReservasDialog extends JDialog {
         }
     }
 
-    private JPanel crearPanelFormularioPrincipal() {
+    private JPanel crearPanelFormularioPrincipal(Atraccion atr) {
         JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
         
         SpinnerNumberModel anioModel = new SpinnerNumberModel(2025, 2025, 2100, 1);
@@ -244,8 +267,15 @@ public class GestionReservasDialog extends JDialog {
         panel.add(new JLabel("Día:"));
         panel.add(spinnerDia);
         
-        panel.add(new JLabel("Hora (HH:MM):"));
-        panel.add(new JTextField("10:00"));
+        // JComboBox para la hora
+        panel.add(new JLabel("Horarios Disponibles:"));
+        JComboBox<LocalTime> horaComboBox = new JComboBox<>();
+        List<LocalTime> horarios = generarHorariosDisponibles(atr);
+        for (LocalTime horario : horarios) {
+            horaComboBox.addItem(horario);
+        }
+        panel.add(horaComboBox);
+        
         panel.add(new JLabel("Cantidad de Personas:"));
         panel.add(new JTextField());
         panel.add(new JLabel("Nombre del Responsable:"));
@@ -253,29 +283,59 @@ public class GestionReservasDialog extends JDialog {
 
         return panel;
     }
-
-    private List<Persona> registrarEdades(int cantidadPersonas, String nombreResponsable) throws NumberFormatException {
-        JPanel panelEdades = new JPanel(new GridLayout(0, 2, 5, 5));
-        List<JTextField> camposEdad = new ArrayList<>();
-
-        for (int i = 1; i <= cantidadPersonas; i++) {
-            String etiqueta = (i == 1) ? "Edad de " + nombreResponsable + " (Responsable):" : "Edad Persona " + i + ":";
-            panelEdades.add(new JLabel(etiqueta));
-            JTextField campoEdad = new JTextField();
-            camposEdad.add(campoEdad);
-            panelEdades.add(campoEdad);
+    
+    private List<LocalTime> generarHorariosDisponibles(Atraccion atr) {
+        List<LocalTime> horarios = new ArrayList<>();
+        if (atr == null || atr.getDuracion() <= 0) {
+            return horarios;
         }
 
-        int resultEdades = JOptionPane.showConfirmDialog(this, panelEdades, "Registrar Edades del Grupo", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        LocalTime horarioActual = atr.getApertura();
+        while (horarioActual.isBefore(atr.getCierre())) {
+            horarios.add(horarioActual);
+            horarioActual = horarioActual.plusMinutes(atr.getDuracion());
+        }
+        return horarios;
+    }
 
-        if (resultEdades == JOptionPane.OK_OPTION) {
+    private List<Persona> registrarPersonas(int cantidadPersonas, String nombreResponsable) throws NumberFormatException {
+        // Usamos un JScrollPane para que el formulario no sea demasiado grande si hay muchas personas
+        JPanel panelPersonas = new JPanel(new GridLayout(0, 4, 5, 5)); // 4 columnas: Label, Txt, Label, Txt
+        List<JTextField> camposEdad = new ArrayList<>();
+        List<JTextField> camposAltura = new ArrayList<>();
+
+        for (int i = 1; i <= cantidadPersonas; i++) {
+            String etiquetaNombre = (i == 1) ? nombreResponsable + " (Responsable):" : "Acompañante " + i + ":";
+            
+            panelPersonas.add(new JLabel(etiquetaNombre));
+            panelPersonas.add(new JLabel("")); // Espacio vacío para alinear
+            
+            JTextField campoEdad = new JTextField();
+            camposEdad.add(campoEdad);
+            panelPersonas.add(new JLabel("Edad:"));
+            panelPersonas.add(campoEdad);
+
+            JTextField campoAltura = new JTextField();
+            camposAltura.add(campoAltura);
+            panelPersonas.add(new JLabel("Altura (cm):"));
+            panelPersonas.add(campoAltura);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(panelPersonas);
+        scrollPane.setPreferredSize(new Dimension(450, 300));
+
+        int result = JOptionPane.showConfirmDialog(this, scrollPane, "Registrar Personas del Grupo", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
             List<Persona> grupo = new ArrayList<>();
             for (int i = 0; i < camposEdad.size(); i++) {
                 int edad = Integer.parseInt(camposEdad.get(i).getText());
-                if (edad <= 0) throw new IllegalArgumentException("La edad debe ser un número positivo.");
+                int altura = Integer.parseInt(camposAltura.get(i).getText());
+                
+                if (edad <= 0 || altura <= 0) throw new IllegalArgumentException("La edad y la altura deben ser números positivos.");
                 
                 String nombre = (i == 0) ? nombreResponsable : "Acompañante " + (i + 1);
-                grupo.add(new Persona(nombre, edad));
+                grupo.add(new Persona(nombre, edad, altura));
             }
             return grupo;
         }
