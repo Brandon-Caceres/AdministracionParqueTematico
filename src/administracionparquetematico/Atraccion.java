@@ -90,25 +90,30 @@ public class Atraccion{
         }
     }
     
-    public Reserva crearNuevaReserva(String fecha, LocalTime  hora, List<Persona> grupoInicial) {
-        // 1. VALIDAR QUE LA HORA SEA UN HORARIO VÁLIDO (ej. 10:00, 10:15, pero no 10:05)
+    public Reserva crearNuevaReserva(String fecha, LocalTime hora, List<Persona> grupoInicial) throws CapacidadExcedidaException {
+    
+        // VALIDACIÓN 1: Horario válido
         if (duracion > 0 && hora.getMinute() % this.duracion != 0) {
+            // Esta puede seguir siendo una IllegalArgumentException, ya que es un error de "parámetro inválido"
             throw new IllegalArgumentException("La hora de la reserva (" + hora + ") no es un horario válido para esta atracción.");
         }
-        // 2. VERIFICAR CAPACIDAD
+    
+        // VALIDACIÓN 2: Capacidad
         int numeroDePersonas = grupoInicial.size();
         int capacidadOcupada = getCapacidadOcupadaEn(hora);
         if ((capacidadOcupada + numeroDePersonas) > this.cantidadMax) {
-            throw new IllegalArgumentException("Capacidad excedida. Solo quedan " + (this.cantidadMax - capacidadOcupada) + " cupos para esa hora.");
+            // AQUÍ ES DONDE LANZAS TU EXCEPCIÓN PERSONALIZADA
+            throw new CapacidadExcedidaException("Capacidad excedida. Solo quedan " + (this.cantidadMax - capacidadOcupada) + " cupos para esa hora.");
         }
-        // 3. Si hay capacidad, se crea la reserva
+    
+        // Si todo está bien, se crea la reserva
         int nuevoCodigoReserva = contadorCodigosReserva++;
         Reserva nuevaReserva = new Reserva(nuevoCodigoReserva, this.nombre, fecha, hora, numeroDePersonas);
-        // Se agrega el grupo completo a la reserva
+    
         for(Persona p : grupoInicial){
             nuevaReserva.agregarPersona(p);
         }
-        
+    
         this.reservas.add(nuevaReserva);
         return nuevaReserva;
     }

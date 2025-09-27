@@ -11,6 +11,8 @@ package administracionparquetematico;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
@@ -227,4 +229,50 @@ public class PersistenciaParque {
 
         return campos.toArray(new String[0]);
     }
+    
+    /**
+ * Genera un reporte legible en formato .txt con todos los datos del parque.
+ * @param parque El objeto Parque con los datos a reportar.
+ * @param archivo El archivo de destino donde se guardará el reporte.
+ */
+public static void generarReporteTXT(Parque parque, File archivo) {
+    try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(archivo), StandardCharsets.UTF_8))) {
+        
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        
+        writer.println("======================================");
+        writer.println("   REPORTE DEL PARQUE TEMÁTICO");
+        writer.println("======================================");
+        writer.println("Fecha del Reporte: " + dtf.format(LocalDateTime.now()));
+        writer.println();
+
+        for (Atraccion atr : parque.getAtraccionesCollection()) {
+            writer.println("--- ATRACCIÓN: " + atr.getNombre() + " (Código: " + atr.getCodigo() + ") ---");
+            writer.println("    Descripción: " + atr.getDescripcion());
+            writer.println("    Capacidad: " + atr.getCantidadMax() + " personas");
+            writer.println("    Horario: " + atr.getApertura() + " - " + atr.getCierre());
+            writer.println("    Duración: " + atr.getDuracion() + " min.");
+            writer.println("    Restricciones: Edad > " + atr.getEdad() + ", Altura > " + atr.getAltura() + "cm");
+            writer.println();
+            writer.println("    Reservas Registradas:");
+            writer.println("    ---------------------");
+            
+            if (atr.getReservas().isEmpty()) {
+                writer.println("    >> No hay reservas para esta atracción.");
+            } else {
+                for (Reserva res : atr.getReservas()) {
+                    writer.println("    >> Reserva #" + res.getCodigoR() + " (Fecha: " + res.getFecha() + ", Hora: " + res.getHora() + ", Cupos: " + res.getNumeroPersonas() + ")");
+                    for (Persona per : res.getGrupo()) {
+                        writer.println("        - " + per.getNombre() + " (Edad: " + per.getEdad() + ", Altura: " + per.getAltura() + "cm)");
+                    }
+                }
+            }
+            writer.println(); // Espacio entre atracciones
+        }
+        
+    } catch (IOException e) {
+        System.err.println("Error al generar el reporte TXT: " + e.getMessage());
+        // Podríamos lanzar una excepción para que la GUI la muestre al usuario
+    }
+}
 }

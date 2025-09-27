@@ -15,7 +15,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -173,10 +172,10 @@ public class GestionReservasDialog extends JDialog {
             // 4. Validar restricciones (con nombres de métodos corregidos)
             for (Persona p : grupo) {
                 if (atr.getEdad() > 0 && p.getEdad() < atr.getEdad()) { // <-- NOMBRES CORREGIDOS
-                    throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la edad mínima de " + atr.getEdad() + " años.");
+                    throw new RestriccionIncumplidaException("Reserva rechazada: " + p.getNombre() + " no cumple la edad mínima de " + atr.getEdad() + " años.");
                 }
                 if (atr.getAltura() > 0 && p.getAltura() < atr.getAltura()) { // <-- NOMBRES CORREGIDOS
-                    throw new IllegalArgumentException("Reserva rechazada: " + p.getNombre() + " no cumple la altura mínima de " + atr.getAltura() + " cm.");
+                    throw new RestriccionIncumplidaException("Reserva rechazada: " + p.getNombre() + " no cumple la altura mínima de " + atr.getAltura() + " cm.");
                 }
             }
 

@@ -12,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 
 public class AdministracionParqueTematico {
     private static Parque parque = new Parque();
@@ -20,13 +21,6 @@ public class AdministracionParqueTematico {
     public static void main(String[] args) {
         // --- 1. CARGAR DATOS AL INICIAR LA APLICACIÓN ---
         PersistenciaParque.cargarDatos(parque, DIRECTORIO_DATOS);
-
-        // Intenta aplicar un estilo visual nativo del sistema operativo
-        /*try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }*/
         
         //--- Crear la Ventana Principal ---
         JFrame frame = new JFrame("Administración del Parque Temático");
@@ -50,16 +44,21 @@ public class AdministracionParqueTematico {
         JLabel welcomeLabel = new JLabel("Sistema de Gestión", SwingConstants.CENTER);
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 24));
         panel.add(welcomeLabel, BorderLayout.NORTH);
-
-        JPanel buttonPanel = new JPanel(new GridLayout(2, 1, 15, 15));
+        
+        JPanel buttonPanel = new JPanel(new GridLayout(3, 1, 15, 15)); 
         JButton btnGestionAtracciones = new JButton("Gestión de Atracciones");
-        JButton btnGestionReservas = new JButton("Gestión de Reservas");
-        
         btnGestionAtracciones.setFont(new Font("Arial", Font.PLAIN, 18));
-        btnGestionReservas.setFont(new Font("Arial", Font.PLAIN, 18));
-        
         buttonPanel.add(btnGestionAtracciones);
+        
+        JButton btnGestionReservas = new JButton("Gestión de Reservas");
+        btnGestionReservas.setFont(new Font("Arial", Font.PLAIN, 18));
         buttonPanel.add(btnGestionReservas);
+        
+        // --- NUEVO BOTÓN DE REPORTE ---
+        JButton btnGenerarReporte = new JButton("Generar Reporte TXT");
+        btnGenerarReporte.setFont(new Font("Arial", Font.PLAIN, 18));
+        buttonPanel.add(btnGenerarReporte);
+        
         panel.add(buttonPanel, BorderLayout.CENTER);
 
         //--- Acciones de los Botones ---
@@ -72,6 +71,32 @@ public class AdministracionParqueTematico {
             GestionReservasDialog dialog = new GestionReservasDialog(frame, parque);
             dialog.setVisible(true);
         });
+        
+        btnGenerarReporte.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Guardar Reporte");
+            // Sugerir un nombre de archivo por defecto
+            fileChooser.setSelectedFile(new File("reporte_parque_tematico.txt"));
+
+            int userSelection = fileChooser.showSaveDialog(frame);
+
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File archivoParaGuardar = fileChooser.getSelectedFile();
+                try {
+                    PersistenciaParque.generarReporteTXT(parque, archivoParaGuardar);
+                    JOptionPane.showMessageDialog(frame, 
+                        "Reporte generado exitosamente en:\n" + archivoParaGuardar.getAbsolutePath(), 
+                        "Reporte Generado", 
+                        JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, 
+                        "Ocurrió un error al generar el reporte.", 
+                        "Error", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
 
         frame.add(panel);
         frame.setVisible(true);
